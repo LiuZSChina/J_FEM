@@ -1,5 +1,3 @@
-from asyncio.windows_events import NULL
-import nntplib
 import matplotlib.patches as mpatch
 import matplotlib.pyplot as plt
 import numpy as np
@@ -46,8 +44,8 @@ class Triangle3Node():
         fig,ax =plt.subplots()
         pot = [i[0:2] for i in self.Nd_i_j_m]
         tri = mpatch.Polygon(pot)
-        ax.set_xlim(-1,5)
-        ax.set_ylim(-1,5)
+        #ax.set_xlim(-1,5)
+        #ax.set_ylim(-1,5)
         ax.add_patch(tri)
         
         if ifNode:

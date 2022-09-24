@@ -1,7 +1,6 @@
-from asyncio.windows_events import NULL
-import re
-from telnetlib import XDISPLOC
 import numpy as np
+import matplotlib.patches as mpatch
+import matplotlib.pyplot as plt
 
 try:
     import FemNodes
@@ -33,6 +32,23 @@ class Solver1():
     #求解
     def solve(self):
         return np.dot(np.linalg.inv(self.Groupe_E),self.Groupe_P)
+
+    # 显示所有的网格
+    def Draw_Mesh(self,Size = [10,20]):
+        fig,ax =plt.subplots()
+        for i in self.ElementGroup:
+            pot = [j[0:2] for j in i.Nd_i_j_m]
+            tri = mpatch.Polygon(pot)
+            #ax.set_xlim(-1,5)
+            #ax.set_ylim(-1,5)
+            ax.add_patch(tri)
+            if True:
+                for j in range(3):
+                    Pos = i.Nd_i_j_m[j]
+                    Numb = i.Nd_number[j]
+                    plt.scatter(Pos[0], Pos[1], c='red', s=Size[0], label='Nodes')
+                    plt.text(Pos[0],Pos[1],Numb,ha='center',va='bottom',fontsize=Size[1])
+        plt.show()
 
     #后处理，获得节点位移
     def Post_Node_Displacement(self,ans,Node_number,scaler=1):
@@ -89,6 +105,7 @@ class Solver1():
             self.Groupe_P[2*Node_Number+1] = value[1]
 
         return
+    
     #判断节点编号连续性
     def Node_Number_Check(self):
         #判断连续性

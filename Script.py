@@ -45,6 +45,8 @@ print(np.linalg.inv(Sov.Groupe_E))
 print('\n------------------P')
 print(Sov.Groupe_P)
 
+Sov.Draw_Mesh()
+
 
 """
 第四步: 求解
