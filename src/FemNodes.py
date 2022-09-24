@@ -6,26 +6,41 @@ class Fem_Nodes():
         self.Fem_Nodes_Dic = {}
         self.Fem_Nodes_count = 0
     
-    def Add_Fem_Nodes(self, New_Node_List):
+    def Add_Fem_Nodes_With_Number(self, New_Node_List,Node_pos):
         junk = [] #维度不对的就返回，不加入进去
         index = []
-        for i in New_Node_List:
-            if len(i) != 3:
-                junk.append(i)
-            if i not in self.Fem_Nodes_List: #新节点
-                self.Fem_Nodes_Dic[self.Fem_Nodes_count] = i
-                self.Fem_Nodes_List.append(i)
-                index .append(self.Fem_Nodes_count)
-                self.Fem_Nodes_count+=1
-            else:#已有节点
+        #逐个加入
+        for i  in range(len(New_Node_List)):
+            Node_Cord = New_Node_List[i]
+            Node_number = Node_pos[i]
+            if len(Node_Cord) != 3:
+                junk.append(Node_Cord)
+
+            #新节点
+            if Node_Cord not in self.Fem_Nodes_List: 
+                # 新编号
+                if Node_number not in self.Fem_Nodes_Dic:
+                    self.Fem_Nodes_Dic[Node_number] = Node_Cord
+                    self.Fem_Nodes_List.append(Node_Cord)
+                    index.append(Node_number)
+                    self.Fem_Nodes_count+=1
+                #编号存在，覆盖原有节点
+                else:
+                    self.Fem_Nodes_List.remove(self.Fem_Nodes_Dic[Node_number])
+                    self.Fem_Nodes_Dic[Node_number] = Node_Cord
+                    self.Fem_Nodes_List.append(Node_Cord)
+                    index.append(Node_number)
+            
+            #已有节点
+            else:
 
                 #找到节点编号
                 for key in self.Fem_Nodes_Dic:
-                    if self.Fem_Nodes_Dic[key] == i:
+                    if self.Fem_Nodes_Dic[key] == Node_Cord:
                         index.append(key)
                         break
                 
-                junk.append(i)
+                junk.append(Node_Cord)
 
         return index,junk
 
@@ -44,8 +59,9 @@ class Fem_Nodes():
     def GetFemNodesCount(self):
         return self.Fem_Nodes_count
 
-    def PrintFemNodes2d(self,size=10):
+    def PrintFemNodes2d(self,Size=[10,20]):
         plt.figure()
-        for i in self.Fem_Nodes_List:
-            plt.scatter(i[0], i[1], c='red', s=size, label='Nodes')
+        for k in self.Fem_Nodes_Dic:
+            plt.text(self.Fem_Nodes_Dic[k][0],self.Fem_Nodes_Dic[k][1],k,ha='center',va='bottom',fontsize=Size[1])
+            plt.scatter(self.Fem_Nodes_Dic[k][0],self.Fem_Nodes_Dic[k][1], c='red', s=Size[0], label='Nodes')
         plt.show()
