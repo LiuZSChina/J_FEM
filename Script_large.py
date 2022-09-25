@@ -18,12 +18,12 @@ Nd.PrintFemNodes2d()
 """
 Fem_Elms = []
 Material = {'E':2e11,'t':1e-2,'v':0.3}
-Fem_Elms.append(src.FemElement.Triangle3Node([0,6,5],Nd,Material))
-Fem_Elms.append(src.FemElement.Triangle3Node([0,1,6],Nd,Material))
-Fem_Elms.append(src.FemElement.Triangle3Node([1,2,6],Nd,Material))
-Fem_Elms.append(src.FemElement.Triangle3Node([6,2,3],Nd,Material))
-Fem_Elms.append(src.FemElement.Triangle3Node([6,3,4],Nd,Material))
-Fem_Elms.append(src.FemElement.Triangle3Node([5,6,4],Nd,Material))
+Fem_Elms.append(src.FemElement.Triangle3Node(0,[0,6,5],Nd,Material))
+Fem_Elms.append(src.FemElement.Triangle3Node(1,[0,1,6],Nd,Material))
+Fem_Elms.append(src.FemElement.Triangle3Node(2,[1,2,6],Nd,Material))
+Fem_Elms.append(src.FemElement.Triangle3Node(3,[6,2,3],Nd,Material))
+Fem_Elms.append(src.FemElement.Triangle3Node(4,[6,3,4],Nd,Material))
+Fem_Elms.append(src.FemElement.Triangle3Node(5,[5,6,4],Nd,Material))
 # 可选，绘制单元供检查
 Fem_Elms[1].Draw_Elm()
 
@@ -31,20 +31,23 @@ Fem_Elms[1].Draw_Elm()
 """
 第三步: 定义求解器 并且加载
 """
-Sov = src.FemSolver.Solver1(Nd,Fem_Elms)
+Sov = src.FemSolver.Solver_Static(Nd,Fem_Elms)
 
 #载荷施加
 F = 5e6*4e-2*1e-2/3
-Sov.Payload(1,[F,''])
+"""Sov.Payload(1,[F,''])
 Sov.Payload(2,[F,0])
-Sov.Payload(3,[F,0])
+Sov.Payload(3,[F,0])"""
+Sov.Payload(1,[F,0])
+Sov.Payload(2,[0,0])
+Sov.Payload(3,[-F,0])
 
 Sov.Displacement(0,[0,''])
 Sov.Displacement(4,[0,''])
 Sov.Displacement(5,[0,0])
 
 # 可选，查看整体刚度矩阵
-if True:
+if False:
     print('\n------------------E')
     print(Sov.Groupe_E)
     print('\n------------------invE')
@@ -68,7 +71,7 @@ print(a)
 #查看2、3节点处的位移
 print('\n========================> Node Displacement <========================')
 scaler = 1000 #米化为毫米
-print('Node1:',str(Sov.Post_Node_Displacement(a,1,scaler)))
-print('Node2:',str(Sov.Post_Node_Displacement(a,2,scaler)))
-print('Node3:',str(Sov.Post_Node_Displacement(a,3,scaler)))
-print('Node6:',str(Sov.Post_Node_Displacement(a,6,scaler)))
+print('Node1:',str(Sov.Post_Node_Displacement(a['Displacement'],1,scaler)))
+print('Node2:',str(Sov.Post_Node_Displacement(a['Displacement'],2,scaler)))
+print('Node3:',str(Sov.Post_Node_Displacement(a['Displacement'],3,scaler)))
+print('Node6:',str(Sov.Post_Node_Displacement(a['Displacement'],6,scaler)))

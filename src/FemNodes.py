@@ -1,3 +1,4 @@
+from textwrap import indent
 import matplotlib.pyplot as plt
 
 class Fem_Nodes():
@@ -43,6 +44,17 @@ class Fem_Nodes():
                 junk.append(Node_Cord)
 
         return index,junk
+
+    def Add_Fem_Nodes_With_Start_Number_Step(self, start, step, number, start_number):
+        index = []
+        for i in range(number):
+            x = start[0] + i*step[0]
+            y = start[1] + i*step[1]
+            z = start[2] + i*step[2]
+            self.Fem_Nodes_Dic[start_number+i] = [x, y, z]
+            self.Fem_Nodes_List.append([x, y, z])
+            index.append(start_number+i)
+            self.Fem_Nodes_count+=1
 
     def GetFemNodes(self,key):
         nd = []

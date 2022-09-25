@@ -1,12 +1,15 @@
+
 import matplotlib.patches as mpatch
 import matplotlib.pyplot as plt
 import numpy as np
 import math
 
 class Triangle3Node():
-    # Nodes-->[i,j,m]结点编号  MaterialProp {'E':弹性模量pa,'v':泊松比,'t':厚度m，} G_mat 转换矩阵
-    def __init__(self,Nodes_number,Nodes_class,MaterialProp) -> None:
+    # Nodes-->[i,j,m]结点编号; Node_classs--> class Fem_Nodes();  MaterialProp-->{'E':弹性模量pa,'v':泊松比,'t':厚度m，}
+    def __init__(self,Elm_num,Nodes_number,Nodes_class,MaterialProp) -> None:
         self.Warning = False
+        self.number = Elm_num
+        self.MaterialProp = MaterialProp
         #得到节点坐标
         Nodes = Nodes_class.GetFemNodes(Nodes_number)
 
@@ -40,7 +43,7 @@ class Triangle3Node():
         return
 
     # 将单元绘制出来
-    def Draw_Elm(self,Size = [10,15],ifNode=True):
+    def Draw_Elm(self,Size = [10,10],ifNode=True):
         fig,ax =plt.subplots()
         pot = [i[0:2] for i in self.Nd_i_j_m]
         tri = mpatch.Polygon(pot)
@@ -89,7 +92,7 @@ class Triangle3Node():
             for s in range(3):
                 K1 = self.abc[1][r]*self.abc[1][s] + ((1-v0)/2)*self.abc[2][r]*self.abc[2][s]
                 K2 = v0*self.abc[2][r]*self.abc[1][s] + ((1-v0)/2)*self.abc[1][r]*self.abc[2][s]
-                K3 = v0*self.abc[1][r]*self.abc[1][s] + ((1-v0)/2)*self.abc[2][r]*self.abc[1][s]
+                K3 = v0*self.abc[1][r]*self.abc[2][s] + ((1-v0)/2)*self.abc[2][r]*self.abc[1][s]
                 K4 = self.abc[2][r]*self.abc[2][s] + ((1-v0)/2)*self.abc[1][r]*self.abc[1][s]
 
                 E[2*r][2*s] = K1
@@ -100,6 +103,14 @@ class Triangle3Node():
         E = BDBtA*E
         #print(E)
         return E
+
+    #生成单元应变矩阵
+    def Generate_Elm_B(self):
+        B_mat = np.array([[self.abc[1][0], 0 , self.abc[1][1], 0 , self.abc[1][2], 0],
+                            [0 , self.abc[2][0], 0 , self.abc[2][1], 0 , self.abc[2][2]],   
+                            [self.abc[2][0], self.abc[1][0], self.abc[2][1], self.abc[1][1], self.abc[2][2], self.abc[1][2]]])
+        B_mat = (1/(2*self.Area))*B_mat
+        return B_mat
 
     # 生成矩阵位置参数abc
     def Get_abc(self):
