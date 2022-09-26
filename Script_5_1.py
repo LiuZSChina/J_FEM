@@ -1,3 +1,4 @@
+
 import src.FemNodes
 import src.FemElement
 import src.FemSolver
@@ -59,12 +60,12 @@ Sov.Displacement(12,[0,0])
 # 可选，查看整体刚度矩阵
 if 0:
     print('\nE------------------')
-    print(Sov.Groupe_E)
+    print(Sov.Calc_E)
     print('\ninvE------------------')
-    print(np.linalg.inv(Sov.Groupe_E))
+    print(np.linalg.inv(Sov.Calc_E))
     print('\nP------------------')
     print(Sov.Groupe_P)
-print(Sov.Groupe_P)
+    print(Sov.Groupe_P)
 Sov.Draw_Mesh()
 
 
@@ -73,6 +74,7 @@ Sov.Draw_Mesh()
 """
 print('\n========================> Solving Problem <========================')
 a = Sov.solve()
+print('\nDisplacement------------------')
 print(a['Displacement'])
 
 
@@ -87,5 +89,6 @@ print('Node2:',str(Sov.Post_Node_Displacement(a['Displacement'],2,scaler)))
 print('Node5:',str(Sov.Post_Node_Displacement(a['Displacement'],5,scaler)))
 print('Node11:',str(Sov.Post_Node_Displacement(a['Displacement'],11,scaler)))
 print('Node17:',str(Sov.Post_Node_Displacement(a['Displacement'],17,scaler)))
-Sov.Draw_Mesh()
+# Sov.Draw_Mesh()
 #input('Enter to exit')
+Sov.Post_DeformedShape_UdeformedEdge(a['Displacement'],100)

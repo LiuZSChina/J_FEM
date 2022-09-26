@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 class Fem_Nodes():
     def __init__(self):
         self.Fem_Nodes_List = []
-        self.Fem_Nodes_Dic = {}
+        self.Fem_Nodes_Dic = {} # {'number':[x,y,z]}
         self.Fem_Nodes_count = 0
     
     def Add_Fem_Nodes_With_Number(self, New_Node_List,Node_pos):

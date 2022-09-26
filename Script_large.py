@@ -39,8 +39,8 @@ F = 5e6*4e-2*1e-2/3
 Sov.Payload(2,[F,0])
 Sov.Payload(3,[F,0])"""
 Sov.Payload(1,[F,0])
-Sov.Payload(2,[0,0])
-Sov.Payload(3,[-F,0])
+Sov.Payload(2,[F,0])
+Sov.Payload(3,[F,0])
 
 Sov.Displacement(0,[0,''])
 Sov.Displacement(4,[0,''])
@@ -75,3 +75,4 @@ print('Node1:',str(Sov.Post_Node_Displacement(a['Displacement'],1,scaler)))
 print('Node2:',str(Sov.Post_Node_Displacement(a['Displacement'],2,scaler)))
 print('Node3:',str(Sov.Post_Node_Displacement(a['Displacement'],3,scaler)))
 print('Node6:',str(Sov.Post_Node_Displacement(a['Displacement'],6,scaler)))
+Sov.Post_DeformedShape_UdeformedEdge(a['Displacement'],10000)

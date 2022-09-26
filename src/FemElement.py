@@ -5,7 +5,7 @@ import numpy as np
 import math
 
 class Triangle3Node():
-    # Nodes-->[i,j,m]结点编号; Node_classs--> class Fem_Nodes();  MaterialProp-->{'E':弹性模量pa,'v':泊松比,'t':厚度m，}
+    # Elm_num -->单元编号 Nodes_number-->[i,j,m]结点编号; Node_classs--> class Fem_Nodes();  MaterialProp-->{'E':弹性模量pa,'v':泊松比,'t':厚度m，}
     def __init__(self,Elm_num,Nodes_number,Nodes_class,MaterialProp) -> None:
         self.Warning = False
         self.number = Elm_num
@@ -26,6 +26,14 @@ class Triangle3Node():
         self.Nd_i_j_m = [Nodes[0],Nodes[1],Nodes[2]]
         self.Nd_number = Nodes_number # 节点的编号
         self.abc = self.Get_abc()
+
+        self.Elm_pos = np.array([[Nodes[0][0]],
+                                [Nodes[0][1]],
+                                [Nodes[1][0]],
+                                [Nodes[1][1]],
+                                [Nodes[2][0]],
+                                [Nodes[2][1]]])
+
     
         #计算矩阵面积
         A_mat = np.mat([[Nodes[0][0], Nodes[0][1], 1],
@@ -59,7 +67,7 @@ class Triangle3Node():
                 plt.text(Pos[0],Pos[1],Numb,ha='center',va='bottom',fontsize=Size[1])
         plt.show()
 
-    # 根据需要的大小生成给定的转换矩阵
+    # 根据需要的大小生成给定的转换矩阵 输入节点数
     def Generate_Elm_G(self, num_N):
         i = self.Nd_number[0]
         j = self.Nd_number[1]

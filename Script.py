@@ -41,9 +41,9 @@ Sov.Displacement(3,[0,0])
 # 可选，查看整体刚度矩阵
 if 0:
     print('\nE------------------')
-    print(Sov.Groupe_E)
+    print(Sov.Calc_E)
     print('\ninvE------------------')
-    print(np.linalg.inv(Sov.Groupe_E))
+    print(np.linalg.inv(Sov.Calc_E))
     print('\nP------------------')
     print(Sov.Groupe_P)
 
@@ -66,3 +66,4 @@ print('\n========================> Node Displacement <========================')
 scaler = 1000 #米化为毫米
 print('Node1:',str(Sov.Post_Node_Displacement(a['Displacement'],1,scaler)))
 print('Node2:',str(Sov.Post_Node_Displacement(a['Displacement'],2,scaler)))
+Sov.Post_DeformedShape_UdeformedEdge(a['Displacement'],10000)

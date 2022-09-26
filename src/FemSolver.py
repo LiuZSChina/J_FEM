@@ -1,3 +1,4 @@
+from lib2to3.pytree import Node
 import math
 from pydoc import doc
 import numpy as np
@@ -29,12 +30,15 @@ class Solver_Static():
         self.Groupe_P = np.zeros((2*self.Node_cnt,1))
 
         # 总体刚度矩阵
-        self.Groupe_E = self.Calc_Grouped_E()
+        self.Init_E = self.Calc_Grouped_E()
+        self.Calc_E = np.zeros_like(self.Init_E)
+        self.Calc_E[:] = self.Init_E
+
 
     #求解
     def solve(self):
         #计算整体的节点位移
-        Node_displacement = np.dot(np.linalg.inv(self.Groupe_E),self.Groupe_P)
+        Node_displacement = np.dot(np.linalg.inv(self.Calc_E),self.Groupe_P)
 
         #计算计算各个单元内应变
         eps = {}
@@ -56,7 +60,7 @@ class Solver_Static():
         return {'Displacement':Node_displacement,'Strain':eps,'Stress':sigma}
 
     # 显示所有的网格
-    def Draw_Mesh(self,Size = [10,20]):
+    def Draw_Mesh(self,Size = [10,10]):
         fig,ax =plt.subplots()
         for i in self.ElementGroup:
             pot = [j[0:2] for j in i.Nd_i_j_m]
@@ -71,12 +75,12 @@ class Solver_Static():
                     Pos = i.Nd_i_j_m[j]
                     Numb = i.Nd_number[j]
                     plt.scatter(Pos[0], Pos[1], c='red', s=Size[0], label='Nodes')
-                    plt.text(Pos[0],Pos[1],Numb,ha='center',va='bottom',fontsize=Size[1])
+                    plt.text(Pos[0],Pos[1],Numb,ha='center',va='bottom' ,c = 'k',fontsize=Size[1])
                     x.append(Pos[0])
                     y.append(Pos[1])
                     
             ax.plot(x,y,c='w')
-
+        plt.title('Fem Meshes to Solve\nx-y axis not equal!')
         plt.show()
 
     #后处理，获得节点位移
@@ -84,6 +88,54 @@ class Solver_Static():
         x_disp = scaler*Displacement[Node_number*2][0]
         y_disp = scaler*Displacement[Node_number*2+1][0]
         return {'x':x_disp,'y':y_disp}
+
+    def Post_DeformedShape_UdeformedEdge(self,Solved_disp,Scaler=1):
+        # 获得有节点的坐标
+        Init_a = np.zeros((2*self.Node_cnt, 1))
+        for key in self.Node:
+            Init_a[2*key][0] = self.Node[key][0]
+            Init_a[2*key +1][0] = self.Node[key][1]
+
+        #叠加上变形结果（包括放大系数）
+        Deformed_a = np.zeros_like(Init_a)
+        Deformed_a[:] = Init_a
+        Deformed_a += Scaler*Solved_disp
+        #print (Deformed_a)
+
+        #定义图表
+        fig,ax =plt.subplots()
+
+        #绘制变形后结果
+        for i in self.ElementGroup:
+            points = []
+            nd_num = i.Nd_number
+            for nd in nd_num:
+                x = Deformed_a[2*nd][0]
+                y = Deformed_a[2*nd+1][0]
+                points.append([x,y])
+            Deformed_Shape = mpatch.Polygon(points)
+            ax.add_patch(Deformed_Shape)      
+        de_nd = []
+        for i in range(self.Node_cnt):
+            x = Deformed_a[2*i]
+            y = Deformed_a[2*i + 1]
+            de_nd.append([x,y])
+        for i in de_nd:
+            plt.scatter(i[0],i[1], c='m', s=10, label='Nodes')
+
+        #绘制变形前的框架
+        for i in self.ElementGroup:
+            x = []
+            y = []
+            for j in range(3):
+                Pos = i.Nd_i_j_m[j]
+                x.append(Pos[0])
+                y.append(Pos[1])                   
+            ax.plot(x,y,c='y',linestyle = 'dashed')
+        plt.title('Deformed Shape with Undeformed Edge \nDisplacement scal=%s | x-y axis not equal!'%Scaler)
+
+        plt.show()
+        return
 
     # 定义载荷边界条件
     def Payload(self,Node_Number,value):
@@ -101,17 +153,17 @@ class Solver_Static():
             # 改1法
             for col in range(2*self.Node_cnt):
                 if col != 2*Node_Number:
-                    self.Groupe_E[2*Node_Number][col] = 0
+                    self.Calc_E[2*Node_Number][col] = 0
                 else:
-                    self.Groupe_E[2*Node_Number][col] = 1
+                    self.Calc_E[2*Node_Number][col] = 1
             for row in range(2*self.Node_cnt):
                 if row != 2*Node_Number:
-                    self.Groupe_E[row][2*Node_Number] = 0
+                    self.Calc_E[row][2*Node_Number] = 0
                 else:
-                    self.Groupe_E[row][2*Node_Number] = 1
+                    self.Calc_E[row][2*Node_Number] = 1
 
         elif value[0] != '':
-            self.Groupe_E[2*Node_Number][2*Node_Number] = 10e20*self.Groupe_E[2*Node_Number][2*Node_Number]
+            self.Calc_E[2*Node_Number][2*Node_Number] = 10e20*self.Calc_E[2*Node_Number][2*Node_Number]
             self.Groupe_P[2*Node_Number] = value[0]
 
         if value[1] == 0:
@@ -120,17 +172,17 @@ class Solver_Static():
             # 改1法
             for col in range(2*self.Node_cnt):
                 if col != 2*Node_Number+1:
-                    self.Groupe_E[2*Node_Number+1][col] = 0
+                    self.Calc_E[2*Node_Number+1][col] = 0
                 else:
-                    self.Groupe_E[2*Node_Number+1][col] = 1
+                    self.Calc_E[2*Node_Number+1][col] = 1
             for row in range(2*self.Node_cnt):
                 if row != 2*Node_Number+1:
-                    self.Groupe_E[row][2*Node_Number+1] = 0
+                    self.Calc_E[row][2*Node_Number+1] = 0
                 else:
-                    self.Groupe_E[row][2*Node_Number+1] = 1
+                    self.Calc_E[row][2*Node_Number+1] = 1
 
         elif value[1] != '':
-            self.Groupe_E[2*Node_Number+1][2*Node_Number+1] = 10e20*self.Groupe_E[2*Node_Number+1][2*Node_Number+1]
+            self.Calc_E[2*Node_Number+1][2*Node_Number+1] = 10e20*self.Calc_E[2*Node_Number+1][2*Node_Number+1]
             self.Groupe_P[2*Node_Number+1] = value[1]
 
         return
@@ -171,8 +223,8 @@ if __name__ == '__main__':
     Fe = FemElement.Triangle3Node([0,1,2],Nd,{'E':2e11,'t':1,'v':0.2})
     #print(Fe.Element_E)
     a = Solver_Static(Nd,[Fe])
-    print(a.Groupe_E)
+    print(a.Calc_E)
     a.Displacement(0,[0,''])
     print('------------------')
-    print(a.Groupe_E)
+    print(a.Calc_E)
     
