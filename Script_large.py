@@ -34,12 +34,12 @@ Fem_Elms[1].Draw_Elm()
 Sov = src.FemSolver.Solver_Static(Nd,Fem_Elms)
 
 #载荷施加
-F = 5e6*4e-2*1e-2/3
+F = 5e6*4e-2*1e-2/4
 """Sov.Payload(1,[F,''])
 Sov.Payload(2,[F,0])
 Sov.Payload(3,[F,0])"""
 Sov.Payload(1,[F,0])
-Sov.Payload(2,[F,0])
+Sov.Payload(2,[2*F,0])
 Sov.Payload(3,[F,0])
 
 Sov.Displacement(0,[0,''])
