@@ -46,6 +46,7 @@ class Fem_Nodes():
         return index,junk
 
     def Add_Fem_Nodes_With_Start_Number_Step(self, start, step, number, start_number):
+        print('---Adding Nodes [%s : %s] ---'%(int(start_number),int(start_number+number-1)))
         index = []
         for i in range(int(number)):
             x = start[0] + i*step[0]

@@ -10,8 +10,10 @@ Nd = src.FemNodes.Fem_Nodes()
 
 #按行生成等间距系列单元
 Nd.Add_Fem_Nodes_With_Start_Number_Step([0,0,0],[2e-2,0,0],6,0)
-Nd.Add_Fem_Nodes_With_Start_Number_Step([0,1e-2,0],[2e-2,0,0],6,6)
-Nd.Add_Fem_Nodes_With_Start_Number_Step([0,2e-2,0],[2e-2,0,0],6,12)
+Nd.Add_Fem_Nodes_With_Start_Number_Step([0,0.5e-2,0],[2e-2,0,0],6,6)
+Nd.Add_Fem_Nodes_With_Start_Number_Step([0,1e-2,0],[2e-2,0,0],6,12)
+Nd.Add_Fem_Nodes_With_Start_Number_Step([0,1.5e-2,0],[2e-2,0,0],6,18)
+Nd.Add_Fem_Nodes_With_Start_Number_Step([0,2e-2,0],[2e-2,0,0],6,24)
 # 可选，绘制设置好的节点供检查
 Nd.PrintFemNodes2d()
 
@@ -20,15 +22,21 @@ Nd.PrintFemNodes2d()
 第二步: 通过定义的节点编号生成一系列单元
 """
 Fem_Elms = []
-Material = {'E':2.1e11,'t':1e-2,'v':0.28}
+Material = {'E':2.1e11,'t':1e-2,'v':0.3}
 
 #生成第一行和第二行的单元
 for i in range(5):
-    Fem_Elms.append(src.FemElement.Triangle3Node(i*2,[i,1+i,7+i],Nd,Material,solve_type='2d_stress'))
-    Fem_Elms.append(src.FemElement.Triangle3Node(1+i*2,[i,7+i,6+i],Nd,Material,solve_type='2d_stress'))
+    Fem_Elms.append(src.FemElement.Triangle3Node(i*2,[i,1+i,7+i],Nd,Material))
+    Fem_Elms.append(src.FemElement.Triangle3Node(1+i*2,[i,7+i,6+i],Nd,Material))
 for i in range(6,11):
-    Fem_Elms.append(src.FemElement.Triangle3Node(i*2-2,[i,1+i,7+i],Nd,Material,solve_type='2d_stress'))
-    Fem_Elms.append(src.FemElement.Triangle3Node(i*2-1,[i,7+i,6+i],Nd,Material,solve_type='2d_stress'))
+    Fem_Elms.append(src.FemElement.Triangle3Node(i*2-2,[i,1+i,7+i],Nd,Material))
+    Fem_Elms.append(src.FemElement.Triangle3Node(i*2-1,[i,7+i,6+i],Nd,Material))
+for i in range(12,17):
+    Fem_Elms.append(src.FemElement.Triangle3Node(i*2-2,[i,1+i,7+i],Nd,Material))
+    Fem_Elms.append(src.FemElement.Triangle3Node(i*2-1,[i,7+i,6+i],Nd,Material))
+for i in range(18,23):
+    Fem_Elms.append(src.FemElement.Triangle3Node(i*2-2,[i,1+i,7+i],Nd,Material))
+    Fem_Elms.append(src.FemElement.Triangle3Node(i*2-1,[i,7+i,6+i],Nd,Material))
 # 可选，绘制单元供检查
 print(len(Fem_Elms))
 if 0:
@@ -43,27 +51,30 @@ Sov = src.FemSolver.Solver_Static_2D(Nd,Fem_Elms)
 
 #载荷施加
 F = 100
-"""
-Sov.Payload(5,[100,0])
-Sov.Payload(11,[100,0])
-Sov.Payload(17,[100,0])
+
+Sov.Payload(5,[0,60])
+Sov.Payload(11,[0,60])
+Sov.Payload(17,[0,60])
+Sov.Payload(23,[0,60])
+Sov.Payload(29,[0,60])
 """
 
-Sov.Payload(5,[0,-50])
-Sov.Payload(11,[0,-200])
-Sov.Payload(17,[0,-50])
-
+Sov.Payload(5,[0,-100])
+Sov.Payload(11,[0,-100])
+Sov.Payload(17,[0,-100])
+"""
 Sov.Displacement(0,[0,0])
 Sov.Displacement(6,[0,0])
 Sov.Displacement(12,[0,0])
-
+Sov.Displacement(18,[0,0])
+Sov.Displacement(24,[0,0])
 
 # 可选，查看整体刚度矩阵
 if 0:
     print('\nE------------------')
-    print(Sov.Calc_E)
-    print('\ninvE------------------')
-    print(np.linalg.inv(Sov.Calc_E))
+    print(Sov.Calc_E.todense())
+    print('\nET-E------------------')
+    print(Sov.Calc_E.todense() == Sov.Calc_E.todense().T)
     print('\nP------------------')
     print(Sov.Groupe_P)
     print(Sov.Groupe_P)
@@ -76,7 +87,7 @@ Sov.Draw_Mesh()
 print('\n========================> Solving Problem <========================')
 a = Sov.solve()
 print('\nDisplacement------------------')
-print(a['Stress'])
+print(a['Displacement'])
 
 
 """

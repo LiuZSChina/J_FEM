@@ -6,13 +6,14 @@ import math
 
 class Triangle3Node():
     # Elm_num -->单元编号 Nodes_number-->[i,j,m]结点编号; Node_classs--> class Fem_Nodes();  MaterialProp-->{'E':弹性模量pa,'v':泊松比,'t':厚度m，}
-    def __init__(self,Elm_num,Nodes_number,Nodes_class,MaterialProp) -> None:
+    def __init__(self,Elm_num,Nodes_number,Nodes_class,MaterialProp,solve_type='2d_strain') -> None:
+        self.Dof = 6
         self.Warning = False
         self.number = Elm_num
         self.MaterialProp = MaterialProp
         #得到节点坐标
         Nodes = Nodes_class.GetFemNodes(Nodes_number)
-
+        self.solve_type = solve_type
         #判断节点坐标是否满足要求————平面，三个
         if len(Nodes)!=3:
             self.Warning = True
@@ -36,10 +37,8 @@ class Triangle3Node():
 
     
         #计算矩阵面积
-        A_mat = np.mat([[Nodes[0][0], Nodes[0][1], 1],
-                        [Nodes[1][0], Nodes[1][1], 1],
-                        [Nodes[2][0], Nodes[2][1], 1]])
-        self.Area = abs(np.linalg.det(A_mat))/2.0
+        self.Area = (self.abc[1][0]*self.abc[2][1]-self.abc[1][1]*self.abc[2][0])/2
+        #print(self.Area)
         if self.Area == 0:#如果面积为0则矩阵出现问题
             self.Warning = True
             return
@@ -86,12 +85,21 @@ class Triangle3Node():
     def Generate_Elm_E(self,Material):
         #获取矩阵前乘常量
         try :
-            BDBtA = Material['E']*Material['t']/( 4*self.Area*(1-math.pow(Material['v'],2)) )
+            E0 = Material['E']
+            thik = Material['t']
+            #BDBtA = Material['E']*Material['t']/( 4*self.Area* (1-math.pow(Material['v'],2)) )
             v0 = Material['v']
         except KeyError:
             self.Warning = True
             return np.ndarray((0))
-        
+
+        #判断平面应力还是应变
+        if self.solve_type == '2d_strain':
+            #print('a')
+            E0 = E0/(1-math.pow(Material['v'],2))
+            v0 = v0/(1-v0)
+
+        BDBtA = E0*thik/(  4*self.Area* (1-math.pow(v0,2)) )
         #开始计算E矩阵
         E = np.zeros((6,6))
 

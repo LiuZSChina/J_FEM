@@ -31,7 +31,7 @@ Fem_Elms[1].Draw_Elm()
 """
 第三步: 定义求解器 并且加载
 """
-Sov = src.FemSolver.Solver_Static(Nd,Fem_Elms)
+Sov = src.FemSolver.Solver_Static_2D(Nd,Fem_Elms)
 
 #载荷施加
 F = 5e6*4e-2*1e-2/4
@@ -42,8 +42,8 @@ Sov.Payload(1,[F,0])
 Sov.Payload(2,[2*F,0])
 Sov.Payload(3,[F,0])
 
-Sov.Displacement(0,[0,''])
-Sov.Displacement(4,[0,''])
+Sov.Displacement(0,[0,0])
+Sov.Displacement(4,[0,0])
 Sov.Displacement(5,[0,0])
 
 # 可选，查看整体刚度矩阵

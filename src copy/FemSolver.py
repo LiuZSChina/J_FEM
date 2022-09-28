@@ -1,7 +1,12 @@
+from array import typecodes
+from ctypes import sizeof
 import math
+from queue import PriorityQueue
+from turtle import shape
 import numpy as np
 import matplotlib.patches as mpatch
 import matplotlib.pyplot as plt
+from scipy.sparse import csr_matrix,lil_matrix,linalg
 
 try:
     import FemNodes
@@ -29,18 +34,16 @@ class Solver_Static():
         print('Got Group P')
 
         # 总体刚度矩阵
-        self.Init_E = self.Calc_Grouped_E()
-        self.Calc_E = np.zeros_like(self.Init_E)
-        self.Calc_E[:] = self.Init_E
+        self.Calc_E = self.Calc_Grouped_E()
         print('Got Group E')
-        print(self.Init_E)
 
 
     #求解
     def solve(self):
         #计算整体的节点位移
         print('Solving Displacement')
-        Node_displacement = np.linalg.solve(self.Calc_E,self.Groupe_P)
+        Solv_E = self.Calc_E.tocsr()
+        Node_displacement = np.array([linalg.spsolve(Solv_E,self.Groupe_P)]).T
         print('Solved Displacement')
 
         #计算计算各个单元内应变
@@ -160,17 +163,17 @@ class Solver_Static():
             # 改1法
             for col in range(2*self.Node_cnt):
                 if col != 2*Node_Number:
-                    self.Calc_E[2*Node_Number][col] = 0
+                    self.Calc_E[2*Node_Number,col] = 0
                 else:
-                    self.Calc_E[2*Node_Number][col] = 1
+                    self.Calc_E[2*Node_Number,col] = 1
             for row in range(2*self.Node_cnt):
                 if row != 2*Node_Number:
-                    self.Calc_E[row][2*Node_Number] = 0
+                    self.Calc_E[row,2*Node_Number] = 0
                 else:
-                    self.Calc_E[row][2*Node_Number] = 1
+                    self.Calc_E[row,2*Node_Number] = 1
 
         elif value[0] != '':
-            self.Calc_E[2*Node_Number][2*Node_Number] = 10e20*self.Calc_E[2*Node_Number][2*Node_Number]
+            self.Calc_E[2*Node_Number,2*Node_Number] = 10e20*self.Calc_E[2*Node_Number,2*Node_Number]
             self.Groupe_P[2*Node_Number] = value[0]
 
         if value[1] == 0:
@@ -179,17 +182,17 @@ class Solver_Static():
             # 改1法
             for col in range(2*self.Node_cnt):
                 if col != 2*Node_Number+1:
-                    self.Calc_E[2*Node_Number+1][col] = 0
+                    self.Calc_E[2*Node_Number+1, col] = 0
                 else:
-                    self.Calc_E[2*Node_Number+1][col] = 1
+                    self.Calc_E[2*Node_Number+1, col] = 1
             for row in range(2*self.Node_cnt):
                 if row != 2*Node_Number+1:
-                    self.Calc_E[row][2*Node_Number+1] = 0
+                    self.Calc_E[row, 2*Node_Number+1] = 0
                 else:
-                    self.Calc_E[row][2*Node_Number+1] = 1
+                    self.Calc_E[row, 2*Node_Number+1] = 1
 
         elif value[1] != '':
-            self.Calc_E[2*Node_Number+1][2*Node_Number+1] = 10e20*self.Calc_E[2*Node_Number+1][2*Node_Number+1]
+            self.Calc_E[2*Node_Number+1, 2*Node_Number+1] = 10e20*self.Calc_E[2*Node_Number+1, 2*Node_Number+1]
             self.Groupe_P[2*Node_Number+1] = value[1]
 
         return
@@ -216,9 +219,9 @@ class Solver_Static():
 
     # 整体刚度矩阵
     def Calc_Grouped_E(self):
-        Gr_E = np.zeros((self.Node_cnt*2, self.Node_cnt*2))
+        Gr_E = lil_matrix((self.Node_cnt*2, self.Node_cnt*2))
         for i in self.ElementGroup:
-            if i.number%20 == 0:
+            if i.number%10000 == 1:
                 print('Now at Element No.%s'%i.number)
             Pose = i.Nd_number
             Ee = i.Element_E
@@ -226,10 +229,10 @@ class Solver_Static():
                 for col in range(3):
                     G_x = int(Pose[row])
                     G_y = int(Pose[col])
-                    Gr_E[2*G_x][2*G_y] += Ee[2*row][2*col]
-                    Gr_E[2*G_x+1][2*G_y+1] += Ee[2*row+1][2*col+1]
-                    Gr_E[2*G_x+1][2*G_y] += Ee[2*row+1][2*col]
-                    Gr_E[2*G_x][2*G_y+1] += Ee[2*row][2*col+1]
+                    Gr_E[2*G_x,2*G_y] += Ee[2*row][2*col]
+                    Gr_E[2*G_x+1,2*G_y+1] += Ee[2*row+1][2*col+1]
+                    Gr_E[2*G_x+1,2*G_y] += Ee[2*row+1][2*col]
+                    Gr_E[2*G_x,2*G_y+1] += Ee[2*row][2*col+1]
 
         return Gr_E
 
