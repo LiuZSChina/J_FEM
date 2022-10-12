@@ -22,13 +22,14 @@ Nd.PrintFemNodes2d()
 Fem_Elms = []
 Material = {'E':2.1e11,'t':1e-2,'v':0.28}
 
+solve_type = '2d_stress'
 #生成第一行和第二行的单元
 for i in range(5):
-    Fem_Elms.append(src.FemElement.Triangle3Node(i*2,[i,1+i,7+i],Nd,Material,solve_type='2d_stress'))
-    Fem_Elms.append(src.FemElement.Triangle3Node(1+i*2,[i,7+i,6+i],Nd,Material,solve_type='2d_stress'))
+    Fem_Elms.append(src.FemElement.Triangle3Node_2d(i*2,[i,1+i,7+i],Nd,Material,solve_type))
+    Fem_Elms.append(src.FemElement.Triangle3Node_2d(1+i*2,[i,7+i,6+i],Nd,Material,solve_type))
 for i in range(6,11):
-    Fem_Elms.append(src.FemElement.Triangle3Node(i*2-2,[i,1+i,7+i],Nd,Material,solve_type='2d_stress'))
-    Fem_Elms.append(src.FemElement.Triangle3Node(i*2-1,[i,7+i,6+i],Nd,Material,solve_type='2d_stress'))
+    Fem_Elms.append(src.FemElement.Triangle3Node_2d(i*2-2,[i,1+i,7+i],Nd,Material,solve_type))
+    Fem_Elms.append(src.FemElement.Triangle3Node_2d(i*2-1,[i,7+i,6+i],Nd,Material,solve_type))
 # 可选，绘制单元供检查
 print(len(Fem_Elms))
 if 0:
@@ -49,13 +50,13 @@ Sov.Payload(11,[100,0])
 Sov.Payload(17,[100,0])
 """
 
-Sov.Payload(5,[0,-50])
-Sov.Payload(11,[0,-200])
-Sov.Payload(17,[0,-50])
+Sov.Payload(5,[0,-0])
+Sov.Payload(11,[0,-300])
+Sov.Payload(17,[0,-0])
 
-Sov.Displacement(0,[0,0])
+Sov.Displacement(0,[0,''])
 Sov.Displacement(6,[0,0])
-Sov.Displacement(12,[0,0])
+Sov.Displacement(12,[0,''])
 
 
 # 可选，查看整体刚度矩阵

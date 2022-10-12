@@ -8,14 +8,14 @@ import numpy as np
 """
 Nd = src.FemNodes.Fem_Nodes()
 
-Size_nodes = 4e5
+Size_nodes = 10
 #按行生成等间距系列单元
 Nd.Add_Fem_Nodes_With_Start_Number_Step([0,0,0],[0.1/(Size_nodes-1),0,0],Size_nodes ,0)
 Nd.Add_Fem_Nodes_With_Start_Number_Step([0,1e-2,0],[0.1/(Size_nodes-1),0,0],Size_nodes ,Size_nodes )
 Nd.Add_Fem_Nodes_With_Start_Number_Step([0,2e-2,0],[0.1/(Size_nodes-1),0,0],Size_nodes,2*Size_nodes)
 # 可选，绘制设置好的节点供检查
 #print('Done')
-#Nd.PrintFemNodes2d()
+Nd.PrintFemNodes2d()
 
 
 """
@@ -28,11 +28,11 @@ s_type = '2d_stress'
 s_type = '2d_strain'
 #生成第一行和第二行的单元
 for i in range(int(Size_nodes -1)):
-    Fem_Elms.append(src.FemElement.Triangle3Node(i*2,[i,1+i,Size_nodes+i],Nd,Material,solve_type=s_type))
-    Fem_Elms.append(src.FemElement.Triangle3Node(1+i*2,[i+1,Size_nodes +1+i,Size_nodes +i],Nd,Material,solve_type=s_type))
+    Fem_Elms.append(src.FemElement.Triangle3Node_2d(i*2,[i,1+i,Size_nodes+i],Nd,Material,solve_type=s_type))
+    Fem_Elms.append(src.FemElement.Triangle3Node_2d(1+i*2,[i+1,Size_nodes +1+i,Size_nodes +i],Nd,Material,solve_type=s_type))
 for i in range(int(Size_nodes),int(2*Size_nodes-1)):
-    Fem_Elms.append(src.FemElement.Triangle3Node(i*2,[i,1+i,Size_nodes+i],Nd,Material,solve_type=s_type))
-    Fem_Elms.append(src.FemElement.Triangle3Node(1+i*2,[i+1,Size_nodes +1+i,Size_nodes +i],Nd,Material,solve_type=s_type))
+    Fem_Elms.append(src.FemElement.Triangle3Node_2d(i*2,[i,1+i,Size_nodes+i],Nd,Material,solve_type=s_type))
+    Fem_Elms.append(src.FemElement.Triangle3Node_2d(1+i*2,[i+1,Size_nodes +1+i,Size_nodes +i],Nd,Material,solve_type=s_type))
 
 # 可选，绘制单元供检查
 print('---Element count = %s'%len(Fem_Elms))
@@ -65,7 +65,7 @@ Sov.Displacement(Size_nodes,[0,0])
 Sov.Displacement(2*Size_nodes,[0,''])
 
 
-#Sov.Draw_Mesh()
+Sov.Draw_Mesh()
 
 # 可选，查看整体刚度矩阵
 if 0:

@@ -241,7 +241,7 @@ class Solver_Static():
 if __name__ == '__main__':
     Nd = FemNodes.Fem_Nodes()
     Nd.Add_Fem_Nodes_With_Number([ [0,0,0],[3,0,0],[0,4,0],[2,8,0] ],[ 0,1,2,3 ])
-    Fe = FemElement.Triangle3Node([0,1,2],Nd,{'E':2e11,'t':1,'v':0.2})
+    Fe = FemElement.Triangle3Node_2d([0,1,2],Nd,{'E':2e11,'t':1,'v':0.2})
     #print(Fe.Element_E)
     a = Solver_Static(Nd,[Fe])
     print(a.Calc_E)

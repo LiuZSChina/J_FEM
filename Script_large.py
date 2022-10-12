@@ -18,12 +18,12 @@ Nd.PrintFemNodes2d()
 """
 Fem_Elms = []
 Material = {'E':2e11,'t':1e-2,'v':0.3}
-Fem_Elms.append(src.FemElement.Triangle3Node(0,[0,6,5],Nd,Material))
-Fem_Elms.append(src.FemElement.Triangle3Node(1,[0,1,6],Nd,Material))
-Fem_Elms.append(src.FemElement.Triangle3Node(2,[1,2,6],Nd,Material))
-Fem_Elms.append(src.FemElement.Triangle3Node(3,[6,2,3],Nd,Material))
-Fem_Elms.append(src.FemElement.Triangle3Node(4,[6,3,4],Nd,Material))
-Fem_Elms.append(src.FemElement.Triangle3Node(5,[5,6,4],Nd,Material))
+Fem_Elms.append(src.FemElement.Triangle3Node_2d(0,[0,6,5],Nd,Material))
+Fem_Elms.append(src.FemElement.Triangle3Node_2d(1,[0,1,6],Nd,Material))
+Fem_Elms.append(src.FemElement.Triangle3Node_2d(2,[1,2,6],Nd,Material))
+Fem_Elms.append(src.FemElement.Triangle3Node_2d(3,[6,2,3],Nd,Material))
+Fem_Elms.append(src.FemElement.Triangle3Node_2d(4,[6,3,4],Nd,Material))
+Fem_Elms.append(src.FemElement.Triangle3Node_2d(5,[5,6,4],Nd,Material))
 # 可选，绘制单元供检查
 Fem_Elms[1].Draw_Elm()
 

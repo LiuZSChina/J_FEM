@@ -89,7 +89,7 @@ class Solver_Static_2D():
                 for j in range(3):
                     Pos = i.Nd_i_j_m[j]
                     Numb = i.Nd_number[j]
-                    plt.scatter(Pos[0], Pos[1], c='red', s=Size[0], label='Nodes')
+                    plt.plot(Pos[0], Pos[1],c='red', marker='.',ls="",ms=Size[0])
                     plt.text(Pos[0],Pos[1],Numb,ha='center',va='bottom' ,c = 'k',fontsize=Size[1])
                     x.append(Pos[0])
                     y.append(Pos[1])
@@ -143,7 +143,8 @@ class Solver_Static_2D():
             y = Deformed_a[2*i + 1]
             de_nd.append([x,y])
         for i in de_nd:
-            plt.scatter(i[0],i[1], c='m', s=10, label='Nodes')
+            #plt.scatter(i[0],i[1], c='m', s=10, label='Nodes')
+            plt.plot(i[0], i[1],c='m', marker='.',ls="",ms=10)
 
         #绘制变形前的框架
         for i in self.ElementGroup:
@@ -267,7 +268,7 @@ def get_von_mises(ans_dict, dim=2):
 if __name__ == '__main__':
     Nd = FemNodes.Fem_Nodes()
     Nd.Add_Fem_Nodes_With_Number([ [0,0,0],[3,0,0],[0,4,0],[2,8,0] ],[ 0,1,2,3 ])
-    Fe = FemElement.Triangle3Node([0,1,2],Nd,{'E':2e11,'t':1,'v':0.2})
+    Fe = FemElement.Triangle3Node_2d([0,1,2],Nd,{'E':2e11,'t':1,'v':0.2})
     #print(Fe.Element_E)
     a = Solver_Static_2D(Nd,[Fe])
     print(a.Calc_E)

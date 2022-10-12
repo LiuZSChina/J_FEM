@@ -9,19 +9,18 @@ import math
 Nd = src.FemNodes.Fem_Nodes()
 Nd.Add_Fem_Nodes_With_Number([ [0,0,0],[6e-2,0,0],[6e-2,4e-2,0],[0,4e-2,0] ],[ 0,1,2,3 ])
 # 可选，绘制设置好的节点供检查
-#Nd.PrintFemNodes2d()
-Nd.PrintFemNodes3d([])
+Nd.PrintFemNodes2d()
+#Nd.PrintFemNodes3d([])
 
 """
 第二步: 通过定义的节点编号生成一系列单元
 """
 Fem_Elms = []
 Material = {'E':2.1e11,'t':1e-2,'v':0.3}
-Fem_Elms.append(src.FemElement.Triangle3Node_2d(1,[0,1,2],Nd,Material))
-Fem_Elms.append(src.FemElement.Triangle3Node_2d(2,[0,2,3],Nd,Material))
+Fem_Elms.append(src.FemElement.Quad4Node_2d(1,[0,1,2,3],Nd,Material))
 # 可选，绘制单元供检查
-if False:
-    Fem_Elms[1].Draw_Elm()
+if 1:
+    Fem_Elms[0].Draw_Elm()
 
 
 """
