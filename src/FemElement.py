@@ -29,7 +29,7 @@ class Triangle3Node_2d():
                 return
 
         # 将矩阵节点参数储存
-        self.Nd_i_j_m = [Nodes[0],Nodes[1],Nodes[2]]
+        self.Nd_i_j_m = [Nodes[0],Nodes[1],Nodes[2]] #节点坐标
         self.Nd_number = Nodes_number # 节点的编号
         self.abc = self.Get_abc()
 
@@ -309,7 +309,7 @@ class Tera4Node_3d(): #tetrahedron
                 return
 
         # 将矩阵节点参数储存
-        self.Nd_i_j_m = [[i for i in Nodes[0]], [i for i in Nodes[1]], [i for i in Nodes[2]], [i for i in Nodes[3]]]
+        self.Nd_i_j_m = [[i for i in Nodes[0]], [i for i in Nodes[1]], [i for i in Nodes[2]], [i for i in Nodes[3]]] #节点坐标
         #print(self.Nd_i_j_m)
         self.Nd_number = Nodes_number # 节点的编号
 

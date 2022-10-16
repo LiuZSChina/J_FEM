@@ -363,8 +363,8 @@ class Solver_Static_3D():
         ax.set_ylim([(sum(y_bound)/2) - max_size/2 , (sum(y_bound)/2) + max_size/2])  # type: ignore
         ax.set_zlim([(sum(z_bound)/2) - max_size/2 , (sum(z_bound)/2) + max_size/2])  # type: ignore
 
-        for i in self.ElementGroup:
-            Elm_idj = i.Nd_i_j_m
+        for t in self.ElementGroup:
+            Elm_idj = t.Nd_i_j_m
             
             # 画各个面和边线
             pol = []
@@ -375,8 +375,12 @@ class Solver_Static_3D():
                     for k in range(j+1,4):
                         kk = (Elm_idj[k][0], Elm_idj[k][1], Elm_idj[k][2])
                         pol.append([ii, jj, kk])
-                        print([ii, jj, kk])
+                        #print([ii, jj, kk])
                         #ax.plot(ii, jj, kk,linestyle='-')
+            Elm_num = t.Nd_number
+            for j in range(len(Elm_num)):
+                ax.text(Elm_idj[j][0], Elm_idj[j][1], Elm_idj[j][2],c = 'k',ha='center',va='bottom',s = str(Elm_num[j]), fontsize=7)    # type: ignore
+                ax.plot(Elm_idj[j][0], Elm_idj[j][1], Elm_idj[j][2],c='m', marker='.',ls="",ms=5)
             
             tera = Poly3DCollection(pol,edgecolors= 'r', facecolor= [0.5, 1, 1], linewidths=Size[0], alpha=Size[1])
             ax.add_collection3d(tera)  # type: ignore
@@ -413,39 +417,68 @@ class Solver_Static_3D():
         #print (Deformed_a)
 
         #定义图表
-        fig,ax =plt.subplots()
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
 
         #绘制变形后结果
-        for i in self.ElementGroup:
-            points = []
-            nd_num = i.Nd_number
-            for nd_f in nd_num:
-                nd = int(nd_f)
-                x = Deformed_a[2*nd][0]
-                y = Deformed_a[2*nd+1][0]
-                points.append([x,y])
-            Deformed_Shape = mpatch.Polygon(points)
-            ax.add_patch(Deformed_Shape)      
-        de_nd = []
-        for i_f in range(self.Node_cnt):
-            i = int(i_f)
-            x = Deformed_a[2*i]
-            y = Deformed_a[2*i + 1]
-            de_nd.append([x,y])
-        for i in de_nd:
-            #plt.scatter(i[0],i[1], c='m', s=10, label='Nodes')
-            plt.plot(i[0], i[1],c='m', marker='.',ls="",ms=10)
+        # Set axis aspect to fit the elm.
+        print_list = []
+        for key in self.Node:
+            print_list.append(self.Node[key])
+        x_bound = [min([i[0] for i in print_list]),max([i[0] for i in print_list])]
+        y_bound = [min([i[1] for i in print_list]),max([i[1] for i in print_list])]
+        z_bound = [min([i[2] for i in print_list]),max([i[2] for i in print_list])]   
+        max_size = max([x_bound[1]-x_bound[0], y_bound[1]-y_bound[0], y_bound[1]-y_bound[0]])
+        ax.set_xlim([(sum(x_bound)/2) - max_size/2 , (sum(x_bound)/2) + max_size/2])  # type: ignore
+        ax.set_ylim([(sum(y_bound)/2) - max_size/2 , (sum(y_bound)/2) + max_size/2])  # type: ignore
+        ax.set_zlim([(sum(z_bound)/2) - max_size/2 , (sum(z_bound)/2) + max_size/2])  # type: ignore
+
+        for t in self.ElementGroup:
+            Elm_Nd_number = t.Nd_number
+            #print(Elm_Nd_number)
+            Elm_idj = []
+            for j in Elm_Nd_number:
+                Elm_idj.append([Deformed_a[3*j][0] , Deformed_a[3*j+1][0] , Deformed_a[3*j+2][0] ])
+            # 画各个面和边线
+            #print(Elm_idj)
+            pol = []
+            for i in range(2):
+                ii = (Elm_idj[i][0], Elm_idj[i][1], Elm_idj[i][2])
+                for j in range(i+1,3):
+                    jj = (Elm_idj[j][0], Elm_idj[j][1], Elm_idj[j][2])
+                    for k in range(j+1,4):
+                        kk = (Elm_idj[k][0], Elm_idj[k][1], Elm_idj[k][2])
+                        pol.append([ii, jj, kk])
+            
+            tera = Poly3DCollection(pol,edgecolors= 'w', facecolor= [0.3, 0.7, 1], linewidths=0.2, alpha=0.5)
+            ax.add_collection3d(tera)  # type: ignore
+
 
         #绘制变形前的框架
-        for i in self.ElementGroup:
-            x = []
-            y = []
-            for j in range(3):
-                Pos = i.Nd_i_j_m[j]
-                x.append(Pos[0])
-                y.append(Pos[1])                   
-            ax.plot(x,y,c='y',linestyle = 'dashed')
-        plt.title('Deformed Shape with Undeformed Edge \nDisplacement scal=%s | x-y axis not equal!'%Scaler)
+        # Set axis aspect to fit the elm.
+        for t in self.ElementGroup:
+            Elm_idj = t.Nd_i_j_m
+            #print(Elm_idj)
+            # 画各个面和边线
+            pol = []
+            for i in range(2):
+                ii = (Elm_idj[i][0], Elm_idj[i][1], Elm_idj[i][2])
+                for j in range(i+1,3):
+                    jj = (Elm_idj[j][0], Elm_idj[j][1], Elm_idj[j][2])
+                    for k in range(j+1,4):
+                        kk = (Elm_idj[k][0], Elm_idj[k][1], Elm_idj[k][2])
+                        pol.append([ii, jj, kk])
+                        #print([ii, jj, kk])
+                        #ax.plot(ii, jj, kk,linestyle='-')
+            tera = Poly3DCollection(pol,edgecolors= 'r', facecolor= [0.5, 1, 1], linewidths=1, alpha=0)
+            ax.add_collection3d(tera)  # type: ignore
+
+            #print every nodes number
+            Elm_num = t.Nd_number
+            for j in range(len(Elm_num)):
+                ax.text(Elm_idj[j][0], Elm_idj[j][1], Elm_idj[j][2],c = 'm',ha='center',va='bottom',s = str(Elm_num[j]), fontsize=8)    # type: ignore
+                ax.plot(Elm_idj[j][0], Elm_idj[j][1], Elm_idj[j][2],c='m', marker='.',ls="",ms=3)
+            
 
         plt.show()
         return
@@ -481,8 +514,8 @@ class Solver_Static_3D():
 
         elif value[0] != '':
             self.Total_Dof -= 1
-            self.Calc_E[3*Node_Number,3*Node_Number] = 10e20*(self.Calc_E[3*Node_Number,3*Node_Number])  # type: ignore
-            self.Groupe_P[3*Node_Number] = value[0]
+            self.Calc_E[3*Node_Number,3*Node_Number] = 10e20*1 # type: ignore
+            self.Groupe_P[3*Node_Number] = 10e20*value[0]
 
         if value[1] == 0:
             self.Total_Dof -= 1
@@ -502,8 +535,8 @@ class Solver_Static_3D():
 
         elif value[1] != '':
             self.Total_Dof -= 1
-            self.Calc_E[3*Node_Number+1, 3*Node_Number+1] = 10e20*self.Calc_E[3*Node_Number+1, 3*Node_Number+1]  # type: ignore
-            self.Groupe_P[3*Node_Number+1] = value[1]
+            self.Calc_E[3*Node_Number+1, 3*Node_Number+1] = 10e20*1  # type: ignore
+            self.Groupe_P[3*Node_Number+1] = 10e20*value[1]
 
         if value[2] == 0:
             self.Total_Dof -= 1
@@ -521,10 +554,10 @@ class Solver_Static_3D():
                 else:
                     self.Calc_E[row, 3*Node_Number+2] = 1
 
-        elif value[1] != '':
+        elif value[2] != '':
             self.Total_Dof -= 1
-            self.Calc_E[3*Node_Number+2, 3*Node_Number+2] = 10e20*self.Calc_E[3*Node_Number+2, 3*Node_Number+2]  # type: ignore
-            self.Groupe_P[3*Node_Number+2] = value[1]
+            self.Calc_E[3*Node_Number+2, 3*Node_Number+2] = 10e20*1  # type: ignore
+            self.Groupe_P[3*Node_Number+2] = 10e20*value[2]
 
         return
     
@@ -562,7 +595,7 @@ class Solver_Static_3D():
             
             Pose = i.Nd_number
             Ee = i.Element_E
-            print(i.Volume)
+            #print(i.Volume)
             for row in range(len(i.Nd_number)):
                 for col in range(len(i.Nd_number)):
                     G_x = int(Pose[row])

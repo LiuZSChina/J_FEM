@@ -31,12 +31,14 @@ Sov = src.FemSolver.Solver_Static_3D(Nd,Fem_Elms)
 
 #载荷施加
 F = 100/2
-Sov.Payload(1,[0,F,0])
+#Sov.Payload(1,[0,F,0])
 
 
 Sov.Displacement(0,[0,0,0])
 Sov.Displacement(2,[0,'',''])
 Sov.Displacement(3,[0,'',''])
+
+Sov.Displacement(1,[-1e-6,'',''])
 
 # 可选，查看整体刚度矩阵
 if 0:
@@ -67,4 +69,4 @@ print('Node0:',str(Sov.Post_Node_Displacement(a['Displacement'],0,scaler)))
 print('Node1:',str(Sov.Post_Node_Displacement(a['Displacement'],1,scaler)))
 print('Node2:',str(Sov.Post_Node_Displacement(a['Displacement'],2,scaler)))
 print('Node3:',str(Sov.Post_Node_Displacement(a['Displacement'],3,scaler)))
-#Sov.Post_DeformedShape_UdeformedEdge(a['Displacement'],1000)
+Sov.Post_DeformedShape_UdeformedEdge(a['Displacement'],10000)

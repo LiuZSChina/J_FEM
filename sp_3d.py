@@ -33,7 +33,7 @@ Fem_Elms.append(src.FemElement.Tera4Node_3d(3,[1,5,4,2],Nd,Material))
 
 Fem_Elms.append(src.FemElement.Tera4Node_3d(4,[1,5,6,3],Nd,Material))
 Fem_Elms.append(src.FemElement.Tera4Node_3d(5,[5,7,6,3],Nd,Material))
-Fem_Elms.append(src.FemElement.Tera4Node_3d(6,[2,7,5,3],Nd,Material))
+Fem_Elms.append(src.FemElement.Tera4Node_3d(6,[2,7,3,5],Nd,Material))
 # 可选，绘制单元供检查
 if 0:
     Fem_Elms[3].Draw_Elm()
@@ -51,10 +51,10 @@ Sov = src.FemSolver.Solver_Static_3D(Nd,Fem_Elms)
 #载荷施加
 F = (5e6*4e-2*1e-2)/2
 F = 1000
-Sov.Payload(1,[F,0,0])
-Sov.Payload(5,[F,0,0])
-Sov.Payload(6,[F,0,0])
-Sov.Payload(7,[F,0,0])
+Sov.Payload(1,[-F,0,0])
+Sov.Payload(5,[-F,0,0])
+Sov.Payload(6,[-F,0,0])
+Sov.Payload(7,[-F,0,0])
 
 Sov.Displacement(0,[0,0,0])
 Sov.Displacement(3,[0,'',0])
@@ -78,7 +78,8 @@ if 1:
 """
 print('\n========================> Solving Problem <========================')
 a = Sov.solve()
-print(a)
+if 0:
+    print(a)
 
 
 """
@@ -91,5 +92,8 @@ print('Node1:',str(Sov.Post_Node_Displacement(a['Displacement'],1,scaler)))
 print('Node5:',str(Sov.Post_Node_Displacement(a['Displacement'],5,scaler)))
 print('Node6:',str(Sov.Post_Node_Displacement(a['Displacement'],6,scaler)))
 print('Node7:',str(Sov.Post_Node_Displacement(a['Displacement'],7,scaler)))
-print('Node3:',str(Sov.Post_Node_Displacement(a['Displacement'],3,scaler)))
-#Sov.Post_DeformedShape_UdeformedEdge(a['Displacement'],1000)
+print('Node4:',str(Sov.Post_Node_Displacement(a['Displacement'],4,scaler)))
+Sov.Post_DeformedShape_UdeformedEdge(a['Displacement'],10000)
+
+if 1:
+    input("Press Enter to Exit")
