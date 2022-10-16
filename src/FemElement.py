@@ -1,4 +1,6 @@
 
+import string
+from tokenize import String
 import matplotlib.patches as mpatch
 import matplotlib.pyplot as plt
 import numpy as np
@@ -188,7 +190,7 @@ class Quad4Node_2d():
         """-----------------------------------------------------------------------------"""
         self.Warning = True
         """-----------------------------------------------------------------------------"""
-
+        self.Area = 0
         """#计算矩阵面积
         self.Area = (self.abc[1][0]*self.abc[2][1]-self.abc[1][1]*self.abc[2][0])/2
         #print(self.Area)
@@ -361,9 +363,9 @@ class Tera4Node_3d(): #tetrahedron
         y_bound = [min([i[1] for i in print_list]),max([i[1] for i in print_list])]
         z_bound = [min([i[2] for i in print_list]),max([i[2] for i in print_list])]   
         max_size = max([x_bound[1]-x_bound[0], y_bound[1]-y_bound[0], y_bound[1]-y_bound[0]])
-        ax.set_xlim([(sum(x_bound)/2) - max_size/2 , (sum(x_bound)/2) + max_size/2])
-        ax.set_ylim([(sum(y_bound)/2) - max_size/2 , (sum(y_bound)/2) + max_size/2])
-        ax.set_zlim([(sum(z_bound)/2) - max_size/2 , (sum(z_bound)/2) + max_size/2])
+        ax.set_xlim([(sum(x_bound)/2) - max_size/2 , (sum(x_bound)/2) + max_size/2])  # type: ignore
+        ax.set_ylim([(sum(y_bound)/2) - max_size/2 , (sum(y_bound)/2) + max_size/2])  # type: ignore
+        ax.set_zlim([(sum(z_bound)/2) - max_size/2 , (sum(z_bound)/2) + max_size/2])  # type: ignore
         
         # 画各个面和边线
         pol = []
@@ -376,12 +378,12 @@ class Tera4Node_3d(): #tetrahedron
                     pol.append([ii, jj, kk])
         
         tera = Poly3DCollection(pol,edgecolors= 'w', facecolor= [0.5, 0.5, 1], linewidths=1, alpha=0.9)
-        ax.add_collection3d(tera)
+        ax.add_collection3d(tera)  # type: ignore
 
         #print every nodes
         for k in range(len(print_list)):
             i = print_list[k]
-            ax.text(i[0], i[1], i[2],c = 'k',ha='center',va='bottom',s=self.Nd_number[k], fontsize=psize[0])
+            ax.text(i[0], i[1], i[2],c = 'k',ha='center',va='bottom',s = str(self.Nd_number[k]), fontsize=psize[0])    # type: ignore
             ax.plot(i[0], i[1], i[2],c='red', marker='.',ls="",ms=psize[1])
         
         plt.show()

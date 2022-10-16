@@ -76,7 +76,7 @@ class Fem_Nodes():
                     if self.Fem_Nodes_Dic[key] == Node_pos[nd]:
                         pos.append(key)
                         break
-
+        return pos
 
     def GetFemNodes(self,key:list)->list:
         nd = []
@@ -118,14 +118,14 @@ class Fem_Nodes():
         y_bound = [min([i[1] for i in print_list]),max([i[1] for i in print_list])]
         z_bound = [min([i[2] for i in print_list]),max([i[2] for i in print_list])]   
         max_size = max([x_bound[1]-x_bound[0], y_bound[1]-y_bound[0], y_bound[1]-y_bound[0]])
-        ax.set_xlim([(sum(x_bound)/2) - max_size/2 , (sum(x_bound)/2) + max_size/2])
-        ax.set_ylim([(sum(y_bound)/2) - max_size/2 , (sum(y_bound)/2) + max_size/2])
-        ax.set_zlim([(sum(z_bound)/2) - max_size/2 , (sum(z_bound)/2) + max_size/2])
+        ax.set_xlim([(sum(x_bound)/2) - max_size/2 , (sum(x_bound)/2) + max_size/2])  # type: ignore
+        ax.set_ylim([(sum(y_bound)/2) - max_size/2 , (sum(y_bound)/2) + max_size/2])  # type: ignore
+        ax.set_zlim([(sum(z_bound)/2) - max_size/2 , (sum(z_bound)/2) + max_size/2])  # type: ignore
 
         #Printing nodes
         for k in range(len(print_list)):
             i = print_list[k]
-            ax.text(i[0], i[1], i[2],c = 'k',ha='center',va='bottom',s=k, fontsize=psize[0])
+            ax.text(i[0], i[1], i[2],c = 'k',ha='center',va='bottom',s=k, fontsize=psize[0])  # type: ignore
             ax.plot(i[0], i[1], i[2],c='red', marker='.',ls="",ms=psize[1])
         
         plt.show()

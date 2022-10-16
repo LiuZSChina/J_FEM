@@ -69,8 +69,8 @@ if 0:
     print('\nP------------------')
     print(Sov.Groupe_P)
 
-if 0:
-    Sov.Draw_Mesh()
+if 1:
+    Sov.Draw_Mesh([1,0])
 
 
 """
