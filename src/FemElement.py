@@ -308,7 +308,7 @@ class Tera4Node_3d(): #tetrahedron
 
         # 将矩阵节点参数储存
         self.Nd_i_j_m = [[i for i in Nodes[0]], [i for i in Nodes[1]], [i for i in Nodes[2]], [i for i in Nodes[3]]]
-        print(self.Nd_i_j_m)
+        #print(self.Nd_i_j_m)
         self.Nd_number = Nodes_number # 节点的编号
 
         self.abc = self.Get_abc()
@@ -348,7 +348,6 @@ class Tera4Node_3d(): #tetrahedron
                 matrix_v[i][j+1] = self.Nd_i_j_m[i][j]
         #print(matrix_v)
         v = np.linalg.det(matrix_v)/6
-        print("volume = %f\n\n"%v)
         return abs(v)
 
     # 将单元绘制出来
@@ -436,14 +435,15 @@ class Tera4Node_3d(): #tetrahedron
             matB[5][i*3+2] = self.abc[1][i]*flag"""
         matB = self.Generate_Elm_B()
         #print(matB)
+        #print(matB)
 
         #开始计算E矩阵
-        E = np.dot(matB.T,matrix_D)
-        E = self.Volume*np.dot(E,matB)
-        #E = np.dot(matB.T,matB)
-        #print(E)
-        #print(E.T==E)
-        return E
+        matrix_E = matB.T@matrix_D@matB
+        matrix_E = self.Volume*matrix_E
+        #E = np.dot(matB.T,matB)   self.Volume*
+        #print(matrix_E)
+        #print(matrix_E.T==matrix_E)
+        return matrix_E
 
     #生成B矩阵
     def Generate_Elm_B(self):
@@ -507,5 +507,5 @@ class Tera4Node_3d(): #tetrahedron
             d[i] = np.linalg.det(matrix_d)
             #print(matrix_d)
             #print(d[i])
-        print([a,b,c,d])
+        #print([a,b,c,d])
         return [a,b,c,d]

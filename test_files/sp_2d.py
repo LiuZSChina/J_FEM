@@ -3,17 +3,11 @@ import src.FemElement
 import src.FemSolver
 import numpy as np
 import math
-
 """
 第一步,先定义结点及其编号。节点编号需从0开始,逐次递增,否则求解时无法通过节点编号检查。
 """
 Nd = src.FemNodes.Fem_Nodes()
-Nd.Add_Fem_Nodes_With_Start_Number_Step([0,0,0],[2e-2,0,0],6,0)
-Nd.Add_Fem_Nodes_With_Start_Number_Step([0,1e-2,0],[2e-2,0,0],6,6)
-Nd.Add_Fem_Nodes_With_Start_Number_Step([0,2e-2,0],[2e-2,0,0],6,12)
-Nd.Add_Fem_Nodes_With_Start_Number_Step([0,0,1e-2],[2e-2,0,0],6,18)
-Nd.Add_Fem_Nodes_With_Start_Number_Step([0,1e-2,1e-2],[2e-2,0,0],6,24)
-Nd.Add_Fem_Nodes_With_Start_Number_Step([0,2e-2,1e-2],[2e-2,0,0],6,30)
+Nd.Add_Fem_Nodes_With_Number([ [0,0,0],[6e-2,0,0],[0,4e-2,0]],[ 0,1,2 ])
 # 可选，绘制设置好的节点供检查
 #Nd.PrintFemNodes2d()
 Nd.PrintFemNodes3d([])
@@ -24,7 +18,7 @@ Nd.PrintFemNodes3d([])
 Fem_Elms = []
 Material = {'E':2.1e11,'t':1e-2,'v':0.3}
 Fem_Elms.append(src.FemElement.Triangle3Node_2d(1,[0,1,2],Nd,Material))
-Fem_Elms.append(src.FemElement.Triangle3Node_2d(2,[0,2,3],Nd,Material))
+#Fem_Elms.append(src.FemElement.Triangle3Node_2d(2,[0,2,3],Nd,Material))
 # 可选，绘制单元供检查
 if False:
     Fem_Elms[1].Draw_Elm()
@@ -36,12 +30,12 @@ if False:
 Sov = src.FemSolver.Solver_Static_2D(Nd,Fem_Elms)
 
 #载荷施加
-F = (5e6*4e-2*1e-2)/2
+F = (5e6*4e-2*1e-2)
 Sov.Payload(1,[F,0])
-Sov.Payload(2,[F,0])
+#Sov.Payload(2,[0,-F])
 
 Sov.Displacement(0,[0,0])
-Sov.Displacement(3,[0,0])
+Sov.Displacement(2,[0,''])
 
 
 # 可选，查看整体刚度矩阵

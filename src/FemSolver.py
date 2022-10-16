@@ -291,7 +291,7 @@ class Solver_Static_3D():
         print('Solving Displacement.........\t',end='')
         Solv_E = self.Calc_E.tocsr()
         try:
-            a = np.linalg.inv(Solv_E.todense())
+            a = np.linalg.inv(self.Calc_E.todense())
         except:
             print("Singuler")
         #print(Solv_E)
