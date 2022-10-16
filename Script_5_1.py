@@ -60,11 +60,10 @@ Sov.Displacement(12,[0,''])
 
 
 # 可选，查看整体刚度矩阵
-if 0:
+if 1:
     print('\nE------------------')
     print(Sov.Calc_E)
-    print('\ninvE------------------')
-    print(np.linalg.inv(Sov.Calc_E))
+    
     print('\nP------------------')
     print(Sov.Groupe_P)
     print(Sov.Groupe_P)
