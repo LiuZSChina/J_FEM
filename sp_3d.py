@@ -3,6 +3,7 @@ import src.FemElement
 import src.FemSolver
 import numpy as np
 import math
+
 """
 第一步,先定义结点及其编号。节点编号需从0开始,逐次递增,否则求解时无法通过节点编号检查。
 """
@@ -12,12 +13,16 @@ l = 6e-2
 Nd = src.FemNodes.Fem_Nodes()
 Nd.Add_Fem_Nodes_With_Number([ [0,0,0],[l,0,0],[0,4e-2,t],[0,4e-2,0] ],[ 0,1,2,3 ])
 Nd.Add_Fem_Nodes_With_Number([[0,0,t],[l,0,t]],[ 4,5 ])
-
 Nd.Add_Fem_Nodes_With_Number([[l,4e-2,0],[l,4e-2,t]],[ 6,7 ])
+l = 2*l
+
+#Nd.Add_Fem_Nodes_With_Number([ [0,0,0],[l,0,0],[0,4e-2,t],[0,4e-2,0] ],[ 8,9,10,11 ])
+Nd.Add_Fem_Nodes_With_Number([[l,0,0],[l,0,t]],[ 8,9 ])
+Nd.Add_Fem_Nodes_With_Number([[l,4e-2,0],[l,4e-2,t]],[ 10,11 ])
 # 可选，绘制设置好的节点供检查
 #Nd.PrintFemNodes2d()
 Nd.PrintFemNodes3d([])
-
+print(Nd.Fem_Nodes_Dic)
 if 0:
     print("Only Nodes Drawing")
     exit()
@@ -34,6 +39,15 @@ Fem_Elms.append(src.FemElement.Tera4Node_3d(3,[1,5,4,2],Nd,Material))
 Fem_Elms.append(src.FemElement.Tera4Node_3d(4,[1,5,6,3],Nd,Material))
 Fem_Elms.append(src.FemElement.Tera4Node_3d(5,[5,7,6,3],Nd,Material))
 Fem_Elms.append(src.FemElement.Tera4Node_3d(6,[2,7,3,5],Nd,Material))
+
+
+Fem_Elms.append(src.FemElement.Tera4Node_3d(7,[1,8,9,10],Nd,Material))
+Fem_Elms.append(src.FemElement.Tera4Node_3d(8,[9,10,11,1],Nd,Material))
+Fem_Elms.append(src.FemElement.Tera4Node_3d(9,[5,9,11,1],Nd,Material))
+
+Fem_Elms.append(src.FemElement.Tera4Node_3d(10,[1,10,6,5],Nd,Material))
+Fem_Elms.append(src.FemElement.Tera4Node_3d(11,[5,7,6,10],Nd,Material))
+Fem_Elms.append(src.FemElement.Tera4Node_3d(12,[5,11,7,10],Nd,Material))
 # 可选，绘制单元供检查
 if 0:
     Fem_Elms[3].Draw_Elm()
@@ -50,11 +64,21 @@ Sov = src.FemSolver.Solver_Static_3D(Nd,Fem_Elms)
 
 #载荷施加
 F = (5e6*4e-2*1e-2)/2
-F = 1000
-Sov.Payload(1,[-F,0,0])
-Sov.Payload(5,[-F,0,0])
-Sov.Payload(6,[-F,0,0])
-Sov.Payload(7,[-F,0,0])
+F = -1000
+"""Sov.Payload(8,[F,0,0])
+Sov.Payload(9,[F,0,0])
+Sov.Payload(10,[F,0,0])
+Sov.Payload(11,[F,0,0])"""
+
+"""Sov.Payload(8,[0,F,0])
+Sov.Payload(9,[0,F,0])
+Sov.Payload(10,[0,F,0])
+Sov.Payload(11,[0,F,0])"""
+
+Sov.Payload(8,[0,F,F])
+Sov.Payload(9,[0,F,F])
+Sov.Payload(10,[0,F,F])
+Sov.Payload(11,[0,F,F])
 
 Sov.Displacement(0,[0,0,0])
 Sov.Displacement(3,[0,'',0])
@@ -93,7 +117,7 @@ print('Node5:',str(Sov.Post_Node_Displacement(a['Displacement'],5,scaler)))
 print('Node6:',str(Sov.Post_Node_Displacement(a['Displacement'],6,scaler)))
 print('Node7:',str(Sov.Post_Node_Displacement(a['Displacement'],7,scaler)))
 print('Node4:',str(Sov.Post_Node_Displacement(a['Displacement'],4,scaler)))
-Sov.Post_DeformedShape_UdeformedEdge(a['Displacement'],10000)
+Sov.Post_DeformedShape_UdeformedEdge(a['Displacement'],1000)
 
 if 1:
     input("Press Enter to Exit")

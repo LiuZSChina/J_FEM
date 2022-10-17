@@ -627,9 +627,9 @@ def get_von_mises(ans_dict, dim=2):
 
 
 if __name__ == '__main__':
-    Nd = Fem_Nodes.Fem_Nodes() #type:ignore
+    Nd = FemNodes.Fem_Nodes() #type:ignore
     Nd.Add_Fem_Nodes_With_Number([ [0,0,0],[3,0,0],[0,4,0],[2,8,0] ],[ 0,1,2,3 ])
-    Fe = FemElement.Triangle3Node_2d([0,1,2],Nd,{'E':2e11,'t':1,'v':0.2})  # type: ignore
+    Fe = FemElement.Triangle3Node_2d(1,[0,1,2],Nd,{'E':2e11,'t':1,'v':0.2})  # type: ignore
     #print(Fe.Element_E)
     a = Solver_Static_2D(Nd,[Fe])
     print(a.Calc_E)
