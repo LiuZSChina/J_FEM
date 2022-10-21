@@ -17,8 +17,8 @@ Nd.PrintFemNodes3d([])
 """
 Fem_Elms = []
 Material = {'E':2.1e11,'t':1e-2,'v':0.3}
-Fem_Elms.append(src.FemElement.Triangle3Node_2d(1,[0,1,2],Nd,Material))
-Fem_Elms.append(src.FemElement.Triangle3Node_2d(2,[0,2,3],Nd,Material))
+Fem_Elms.append(src.FemElement.Triangle3Node_2d(1,[0,1,2],Nd,Material,'2d_stress'))
+Fem_Elms.append(src.FemElement.Triangle3Node_2d(2,[0,2,3],Nd,Material,'2d_stress'))
 # 可选，绘制单元供检查
 if False:
     Fem_Elms[1].Draw_Elm()
@@ -35,7 +35,7 @@ Sov.Payload(1,[F,0])
 Sov.Payload(2,[F,0])
 
 Sov.Displacement(0,[0,0])
-Sov.Displacement(3,[0,0])
+Sov.Displacement(3,[0,''])
 
 
 # 可选，查看整体刚度矩阵

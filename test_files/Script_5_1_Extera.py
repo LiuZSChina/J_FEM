@@ -8,14 +8,14 @@ import numpy as np
 """
 Nd = src.FemNodes.Fem_Nodes()
 
-Size_nodes = 10
+Size_nodes = 84
 #按行生成等间距系列单元
 Nd.Add_Fem_Nodes_With_Start_Number_Step([0,0,0],[0.1/(Size_nodes-1),0,0],Size_nodes ,0)
 Nd.Add_Fem_Nodes_With_Start_Number_Step([0,1e-2,0],[0.1/(Size_nodes-1),0,0],Size_nodes ,Size_nodes )
 Nd.Add_Fem_Nodes_With_Start_Number_Step([0,2e-2,0],[0.1/(Size_nodes-1),0,0],Size_nodes,2*Size_nodes)
 # 可选，绘制设置好的节点供检查
 #print('Done')
-Nd.PrintFemNodes2d()
+#Nd.PrintFemNodes2d()
 
 
 """
@@ -65,7 +65,7 @@ Sov.Displacement(Size_nodes,[0,0])
 Sov.Displacement(2*Size_nodes,[0,''])
 
 
-Sov.Draw_Mesh()
+#Sov.Draw_Mesh()
 
 # 可选，查看整体刚度矩阵
 if 0:

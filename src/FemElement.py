@@ -289,14 +289,13 @@ class Quad4Node_2d():
 
 class Tera4Node_3d(): #tetrahedron
     # Elm_num -->单元编号 Nodes_number-->[i,j,m]结点编号; Node_classs--> class Fem_Nodes();  MaterialProp-->{'E':弹性模量pa,'v':泊松比,'t':厚度m，}
-    def __init__(self,Elm_num,Nodes_number,Nodes_class,MaterialProp,solve_type='2d_strain') -> None:
+    def __init__(self,Elm_num,Nodes_number,Nodes_class,MaterialProp) -> None:
         self.Dof = 12
         self.Warning = False
         self.number = Elm_num
         self.MaterialProp = MaterialProp
         #得到节点坐标
         Nodes = Nodes_class.GetFemNodes(Nodes_number)
-        self.solve_type = solve_type
         #判断节点坐标是否满足要求————平面，三个
         if len(Nodes)!=4:
             self.Warning = True

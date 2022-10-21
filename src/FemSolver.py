@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from scipy.sparse import csr_matrix,lil_matrix
 from scipy.sparse import linalg as sci_linalg
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection, Line3D
+from src.doolittle import Doolittle_solver
 
 
 try:
@@ -44,9 +45,16 @@ class Solver_Static_2D():
         #打印总共自由度数量
         print('\nTotal Dofs ================== %s\n'%self.Total_Dof)
         #计算整体的节点位移
-        print('Solving Displacement.........\t',end='')
-        Solv_E = self.Calc_E.tocsr()
-        Node_displacement = np.array([sci_linalg.spsolve(Solv_E,self.Groupe_P)]).T
+        if self.Total_Dof <2000:
+            print('Solving Method ........... Doolittle')
+            print('Solving Displacement.........\t',end='')
+            Solv_E = np.array(self.Calc_E.todense())
+            Node_displacement = Doolittle_solver(Solv_E,self.Groupe_P)
+        else:
+            print('Solving Method ............... Scipy')
+            print('Solving Displacement.........\t',end='')
+            Solv_E = self.Calc_E.tocsr()
+            Node_displacement = np.array([sci_linalg.spsolve(Solv_E,self.Groupe_P)]).T
         print('Done')
 
         #计算计算各个单元内应变
@@ -290,15 +298,18 @@ class Solver_Static_3D():
     def solve(self):
         #打印总共自由度
         print('\nTotal Dofs ================== %s\n'%self.Total_Dof)
+
         #计算整体的节点位移
-        print('Solving Displacement.........\t',end='')
-        Solv_E = self.Calc_E.tocsr()
-        try:
-            a = np.linalg.inv(self.Calc_E.todense())
-        except:
-            print("Singuler")
-        #print(Solv_E)
-        Node_displacement = np.array([sci_linalg.spsolve(Solv_E,self.Groupe_P)]).T
+        if self.Total_Dof <1000:
+            print('Solving Method ........... Doolittle')
+            print('Solving Displacement.........\t',end='')
+            Solv_E = np.array(self.Calc_E.todense())
+            Node_displacement = Doolittle_solver(Solv_E,self.Groupe_P)
+        else:
+            print('Solving Method ......... Scipy')
+            print('Solving Displacement.........\t',end='')
+            Solv_E = self.Calc_E.tocsr()
+            Node_displacement = np.array([sci_linalg.spsolve(Solv_E,self.Groupe_P)]).T
         print('Done')
 
         #计算计算各个单元内应变
