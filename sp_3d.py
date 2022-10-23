@@ -64,21 +64,22 @@ Sov = src.FemSolver.Solver_Static_3D(Nd,Fem_Elms)
 
 #载荷施加
 F = (5e6*4e-2*1e-2)/2
-F = 10000
+F = 1000
+
 """Sov.Payload(8,[F,0,0])
 Sov.Payload(9,[F,0,0])
 Sov.Payload(10,[F,0,0])
 Sov.Payload(11,[F,0,0])"""
 
-"""Sov.Payload(8,[0,F,0])
+Sov.Payload(8,[0,F,0])
 Sov.Payload(9,[0,F,0])
 Sov.Payload(10,[0,F,0])
-Sov.Payload(11,[0,F,0])"""
+Sov.Payload(11,[0,F,0])
 
-Sov.Payload(8,[0,0,F])
+"""Sov.Payload(8,[0,0,F])
 Sov.Payload(9,[0,0,F])
 Sov.Payload(10,[0,0,-F])
-Sov.Payload(11,[0,0,-F])
+Sov.Payload(11,[0,0,-F])"""
 
 Sov.Displacement(0,[0,0,0])
 Sov.Displacement(3,[0,'',0])
