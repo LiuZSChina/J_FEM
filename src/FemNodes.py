@@ -1,5 +1,6 @@
 from sys import maxsize
 from telnetlib import NOP
+from tkinter.messagebox import NO
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -46,7 +47,7 @@ class Fem_Nodes():
                 
                 junk.append(Node_Cord)
 
-        return index,junk
+        return index
 
     def Add_Fem_Nodes_With_Start_Number_Step(self, start, step, number, start_number):
         print('---Adding Nodes [%s : %s] ---'%(int(start_number),int(start_number+number-1)))
@@ -64,7 +65,7 @@ class Fem_Nodes():
         i = self.Fem_Nodes_count
         while i in self.Fem_Nodes_Dic:
             i += 1
-        pos = []
+        pos = [] #加入后的编号
         for nd in range(len(Node_pos)):
             if Node_pos[nd] not in self.Fem_Nodes_List:
                 pos.append(i)
@@ -99,6 +100,62 @@ class Fem_Nodes():
             plt.text(self.Fem_Nodes_Dic[k][0],self.Fem_Nodes_Dic[k][1],k,ha='center',va='bottom',fontsize=Size[1])
             plt.plot(self.Fem_Nodes_Dic[k][0],self.Fem_Nodes_Dic[k][1], c='red', marker='o',ls="")
         plt.show()
+
+    #寻找某条线上的节点 Line:[start:[x,y,z], end:[x,y,z]]
+    def Find_Nodes_on_Line(self, Line:list)->list:
+        nd_list = []
+        direction = [Line[1][0]-Line[0][0], Line[1][1]-Line[0][1] ,Line[1][2]-Line[0][2]]
+        print("_________________________________________UNFINISHED(Find_Nodes_on_Line)______________________________________________")
+        return nd_list
+
+    #寻找坐标范围内的节点 cord_range:{'x\y\z':[start,end]} eg{'y':[0,0]}
+    def Find_Nodes_Cord_Range(self, cord_range:dict)->list:
+        nd_list = []
+        c_range_list = [None, None, None]
+        for key in cord_range:
+            if key == 'x':
+                c_range_list[0] = cord_range[key]
+
+            elif key == 'y':
+                c_range_list[1] = cord_range[key]
+                    
+            elif key == 'z':
+                c_range_list[2] = cord_range[key]
+        #print(c_range_list)
+        for i in self.Fem_Nodes_Dic:
+            xyz = self.Fem_Nodes_Dic[i]
+            xr = c_range_list[0]
+            yr = c_range_list[1]
+            zr = c_range_list[2]
+            if xr != None:
+                if len(xr) == 1:
+                    if xyz[0] != xr[0]:
+                        continue
+                else:
+                    if xyz[0] < xr[0] or xyz[0] > xr[1]:
+                        continue
+
+            if yr != None:
+                if len(yr) == 1:
+                    if xyz[1] != yr[0]:
+                        continue
+                else:
+                    if xyz[1] < yr[0] or xyz[1] > yr[1]:
+                        #print(xyz[1])
+                        continue
+
+            if zr != None:
+                if len(zr) == 1:
+                    if xyz[2] != zr[0]:
+                        continue
+                else:
+                    if xyz[2] < zr[0] or xyz[2] > zr[1]:
+                        continue
+            
+            nd_list.append(i)
+
+        return nd_list
+                
 
     #三维模式下绘图 Nodes = [] 绘制所有
     def PrintFemNodes3d(self, Nodes:list, psize=[10,5], scale = [1e-2,1e-2,1e-2]):   

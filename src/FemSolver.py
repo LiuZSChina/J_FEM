@@ -25,6 +25,7 @@ class Solver_Static_2D():
         self.ElementGroup = EleList
         self.Total_Dof = 0
         #判断节点可用
+        print('======>     Node&Element Number Checking     <======')
         nNc,word = self.Node_Elment_Number_Check()
         if not nNc:
             print(word)
@@ -45,7 +46,7 @@ class Solver_Static_2D():
         #打印总共自由度数量
         print('\nTotal Dofs ================== %s\n'%self.Total_Dof)
         #计算整体的节点位移
-        if self.Total_Dof <2000:
+        if self.Total_Dof <10000:
             print('Solving Method ........... Doolittle')
             print('Solving Displacement.........\t',end='')
             Solv_E = np.array(self.Calc_E.todense())
@@ -118,8 +119,13 @@ class Solver_Static_2D():
         return {'x':x_disp,'y':y_disp}
 
     #后处理 变形后形状与变形前框架
-    def Post_DeformedShape_UdeformedEdge(self,Solved_disp,Scaler=1):
-        if self.Node_cnt>1000:
+    def Post_DeformedShape_UdeformedEdge(self,Solved_disp,Scaler=1, Force_display=False):
+        if self.Node_cnt>10000:
+            print('!====> Too many nodes, Stop Displaying <====!')
+            print('!====> Set Force_display = True to display!')
+            if Force_display == False:
+                return
+        if self.Node_cnt>5000:
             print('!====> Too many nodes, display maybe very slow <====!')
         # 获得有节点的坐标
         Init_a = np.zeros((2*self.Node_cnt, 1))

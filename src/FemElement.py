@@ -1,4 +1,5 @@
 
+from re import S
 import string
 from tokenize import String
 import matplotlib.patches as mpatch
@@ -7,14 +8,47 @@ import numpy as np
 import math
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
+
+class Element_Group():
+    def  __init__(self, Nd_class) -> None:
+        self.Elm_list = []
+        self.Elm_dict = {}
+        self.Nd_class = Nd_class
+
+    def Add_Elm_Auto_Number(self, elm_type, Nd_list:list,Material:dict, pv=[]) -> int:
+        i = len(self.Elm_list)
+        while i in self.Elm_dict:
+            i+=1
+        
+        if elm_type == 'T3_2d':
+            elm = Triangle3Node_2d(i,Nd_list,self.Nd_class,Material,pv[0])
+            self.Elm_list.append(elm)
+            self.Elm_dict[i] = elm
+        return i
+
+    def Add_Elm_With_Number(self, elm_type, Number, Nd_list:list, Material:dict, pv=[]) -> int:
+        if elm_type == 'T3_2d':
+            elm = Triangle3Node_2d(Number,Nd_list,self.Nd_class,Material,pv[0])
+            self.Elm_list.append(elm)
+            self.Elm_dict[Number] = elm
+        return Number
+
+    def Remove_Elm(self, Elm_num:list):
+        for i in Elm_num:
+            elm = self.Elm_dict.pop(i)
+            self.Elm_list.remove(elm)
+
+
 class Triangle3Node_2d():
-    # Elm_num -->单元编号 Nodes_number-->[i,j,m]结点编号; Node_classs--> class Fem_Nodes();  MaterialProp-->{'E':弹性模量pa,'v':泊松比,'t':厚度m，}
-    def __init__(self,Elm_num,Nodes_number,Nodes_class,MaterialProp,solve_type='2d_strain') -> None:
+    # Elm_num -->单元编号; Nodes_number-->[i,j,m]结点编号; Node_classs--> class Fem_Nodes();  MaterialProp-->{'E':弹性模量pa,'v':泊松比,'t':厚度m} 
+    # circle_edge = {'(nd1,nd2):set':[[x,y,z](圆心), r(半径)]}
+    def __init__(self,Elm_num,Nodes_number,Nodes_class,MaterialProp,solve_type='2d_strain', circle_edge = {}) -> None:
         self.Dof = 6
         self.Warning = False
         self.number = Elm_num
         self.MaterialProp = MaterialProp
         #得到节点坐标
+        #print(Nodes_number)
         Nodes = Nodes_class.GetFemNodes(Nodes_number)
         self.solve_type = solve_type
         #判断节点坐标是否满足要求————平面，三个
@@ -33,14 +67,9 @@ class Triangle3Node_2d():
         self.Nd_number = Nodes_number # 节点的编号
         self.abc = self.Get_abc()
 
-        self.Elm_pos = np.array([[Nodes[0][0]],
-                                [Nodes[0][1]],
-                                [Nodes[1][0]],
-                                [Nodes[1][1]],
-                                [Nodes[2][0]],
-                                [Nodes[2][1]]])
+        #储存圆角的边
+        self.circle_edge = circle_edge
 
-    
         #计算矩阵面积
         self.Area = (self.abc[1][0]*self.abc[2][1]-self.abc[1][1]*self.abc[2][0])/2
         #print(self.Area)
@@ -54,6 +83,27 @@ class Triangle3Node_2d():
         self.Element_P = [0]*6
         
         return
+    
+    def split_mesh_3(self, Elm_Group:Element_Group):
+        new_nodes_index = []
+        for i in range(3):
+            #print((self.Nd_number[i],self.Nd_number[(i+1)%3]))
+            if (self.Nd_number[i],self.Nd_number[(i+1)%3]) not in self.circle_edge:
+                new_x = (self.Nd_i_j_m[i][0] + self.Nd_i_j_m[(i+1)%3][0]) / 2
+                new_y = (self.Nd_i_j_m[i][1] + self.Nd_i_j_m[(i+1)%3][1]) / 2
+                new_z = (self.Nd_i_j_m[i][2] + self.Nd_i_j_m[(i+1)%3][2]) / 2
+                new_cord = [new_x,new_y,new_z]
+                index = Elm_Group.Nd_class.Add_Fem_Nodes_Auto_Number([ new_cord ])
+                new_nodes_index.append(index[0])
+                #print(new_cord,index, [ [ self.Nd_i_j_m[i][0], self.Nd_i_j_m[i][1], self.Nd_i_j_m[i][2]] ,[ self.Nd_i_j_m[(i+1)%3][0], self.Nd_i_j_m[(i+1)%3][1], self.Nd_i_j_m[(i+1)%3][2] ]]  )
+        #print (new_nodes_index)
+        Elm_Group.Remove_Elm([self.number])
+        Elm_Group.Add_Elm_With_Number('T3_2d', self.number ,[self.Nd_number[0],new_nodes_index[0],new_nodes_index[2]] , self.MaterialProp, pv=[self.solve_type])
+        Elm_Group.Add_Elm_Auto_Number('T3_2d', [new_nodes_index[0], self.Nd_number[1], new_nodes_index[1]] , self.MaterialProp, pv=[self.solve_type])
+        Elm_Group.Add_Elm_Auto_Number('T3_2d', [new_nodes_index[0], new_nodes_index[1], new_nodes_index[2]] , self.MaterialProp, pv=[self.solve_type])
+        Elm_Group.Add_Elm_Auto_Number('T3_2d', [new_nodes_index[2], new_nodes_index[1], self.Nd_number[2]] , self.MaterialProp, pv=[self.solve_type])
+        pass
+
 
     # 将单元绘制出来
     def Draw_Elm(self,Size = [10,10],ifNode=True):
@@ -178,7 +228,7 @@ class Quad4Node_2d():
         self.Nd_number = Nodes_number # 节点的编号
         self.abc = self.Get_abc()
 
-        self.Elm_pos = np.array([[Nodes[0][0]], 
+        """self.Elm_pos = np.array([[Nodes[0][0]], 
                                 [Nodes[0][1]],
                                 [Nodes[1][0]],
                                 [Nodes[1][1]],
@@ -186,7 +236,7 @@ class Quad4Node_2d():
                                 [Nodes[2][1]],
                                 [Nodes[3][0]],
                                 [Nodes[3][1]]])# aka u v
-
+"""
         """-----------------------------------------------------------------------------"""
         self.Warning = True
         """-----------------------------------------------------------------------------"""
@@ -314,7 +364,7 @@ class Tera4Node_3d(): #tetrahedron
 
         self.abc = self.Get_abc()
         #print(self.abc)
-        self.Elm_pos = np.array([[Nodes[0][0]], 
+        """self.Elm_pos = np.array([[Nodes[0][0]], 
                                 [Nodes[0][1]],
                                 [Nodes[0][2]],
                                 [Nodes[1][0]],
@@ -325,7 +375,7 @@ class Tera4Node_3d(): #tetrahedron
                                 [Nodes[2][2]],
                                 [Nodes[3][0]],
                                 [Nodes[3][1]],
-                                [Nodes[3][2]]])# aka u v
+                                [Nodes[3][2]]])# aka u v"""
 
         
         self.Volume = self.calc_volume()
