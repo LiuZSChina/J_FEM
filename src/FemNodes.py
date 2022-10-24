@@ -99,6 +99,7 @@ class Fem_Nodes():
         for k in self.Fem_Nodes_Dic:
             plt.text(self.Fem_Nodes_Dic[k][0],self.Fem_Nodes_Dic[k][1],k,ha='center',va='bottom',fontsize=Size[1])
             plt.plot(self.Fem_Nodes_Dic[k][0],self.Fem_Nodes_Dic[k][1], c='red', marker='o',ls="")
+        plt.axis('equal')
         plt.show()
 
     #寻找某条线上的节点 Line:[start:[x,y,z], end:[x,y,z]]

@@ -41,7 +41,7 @@ if 0:
         i.Draw_Elm()
 
 
-for t in range(5):
+for t in range(3):
     print('---Refining Meshes &%d ---'%t)
     total = 0
     for j in Fem_Elms_class.Elm_dict:

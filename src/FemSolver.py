@@ -46,7 +46,7 @@ class Solver_Static_2D():
         #打印总共自由度数量
         print('\nTotal Dofs ================== %s\n'%self.Total_Dof)
         #计算整体的节点位移
-        if self.Total_Dof <10000:
+        if self.Total_Dof <5000:
             print('Solving Method ........... Doolittle')
             print('Solving Displacement.........\t',end='')
             Solv_E = np.array(self.Calc_E.todense())
@@ -173,8 +173,8 @@ class Solver_Static_2D():
                 x.append(Pos[0])
                 y.append(Pos[1])                   
             ax.plot(x,y,c='y',linestyle = 'dashed')
-        plt.title('Deformed Shape with Undeformed Edge \nDisplacement scal=%s | x-y axis not equal!'%Scaler)
-
+        plt.title('Deformed Shape with Undeformed Edge \nDisplacement scal=%s'%Scaler)
+        plt.axis('equal')
         plt.show()
         return
 
@@ -247,7 +247,7 @@ class Solver_Static_2D():
         number = []
         for i in self.ElementGroup:
             self.Total_Dof += i.Dof
-            if i.Warning == True:
+            if i.Error == True:
                 return False, 'Element Warning on No.%s' %i.number
             if i.number in number:
                 return False, 'More Than One Elements Have Same Number:%s'%i.number

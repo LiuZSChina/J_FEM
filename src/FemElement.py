@@ -44,7 +44,7 @@ class Triangle3Node_2d():
     # circle_edge = {'(nd1,nd2):set':[[x,y,z](圆心), r(半径)]}
     def __init__(self,Elm_num,Nodes_number,Nodes_class,MaterialProp,solve_type='2d_strain', circle_edge = {}) -> None:
         self.Dof = 6
-        self.Warning = False
+        self.Error = False
         self.number = Elm_num
         self.MaterialProp = MaterialProp
         #得到节点坐标
@@ -53,12 +53,12 @@ class Triangle3Node_2d():
         self.solve_type = solve_type
         #判断节点坐标是否满足要求————平面，三个
         if len(Nodes)!=3:
-            self.Warning = True
+            self.Error = True
             print('!===Not Enough Nodes===!')
             return
         for i in Nodes:
             if len(i)!=3:
-                self.Warning = True
+                self.Error = True
                 print('!===Node Dim ERR===!')
                 return
 
@@ -74,7 +74,7 @@ class Triangle3Node_2d():
         self.Area = (self.abc[1][0]*self.abc[2][1]-self.abc[1][1]*self.abc[2][0])/2
         #print(self.Area)
         if self.Area == 0:#如果面积为0则矩阵出现问题
-            self.Warning = True
+            self.Error = True
             print('!===ELm Aera = 0===!')
             return
 
@@ -103,7 +103,6 @@ class Triangle3Node_2d():
         Elm_Group.Add_Elm_Auto_Number('T3_2d', [new_nodes_index[0], new_nodes_index[1], new_nodes_index[2]] , self.MaterialProp, pv=[self.solve_type])
         Elm_Group.Add_Elm_Auto_Number('T3_2d', [new_nodes_index[2], new_nodes_index[1], self.Nd_number[2]] , self.MaterialProp, pv=[self.solve_type])
         pass
-
 
     # 将单元绘制出来
     def Draw_Elm(self,Size = [10,10],ifNode=True):
@@ -146,7 +145,7 @@ class Triangle3Node_2d():
             #BDBtA = Material['E']*Material['t']/( 4*self.Area* (1-math.pow(Material['v'],2)) )
             v0 = Material['v']
         except KeyError:
-            self.Warning = True
+            self.Error = True
             return np.ndarray((0))
 
         #判断平面应力还是应变
