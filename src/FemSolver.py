@@ -107,8 +107,9 @@ class Solver_Static_2D():
                     x.append(Pos[0])
                     y.append(Pos[1])
                     
-            ax.plot(x,y,c='w')
+            ax.plot(x,y,c='m')
         plt.title('Fem Meshes to Solve\nx-y axis not equal!')
+        plt.axis('equal')
         plt.show()
 
     #后处理，获得节点位移

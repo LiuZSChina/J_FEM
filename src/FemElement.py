@@ -21,6 +21,10 @@ class Element_Group():
             i+=1
         
         if elm_type == 'T3_2d':
+            for j in Nd_list:
+                if j not in self.Nd_class.Fem_Nodes_Dic:
+                    print("Problem!")
+                    exit()
             elm = Triangle3Node_2d(i,Nd_list,self.Nd_class,Material,pv[0])
             self.Elm_list.append(elm)
             self.Elm_dict[i] = elm
@@ -55,6 +59,7 @@ class Triangle3Node_2d():
         if len(Nodes)!=3:
             self.Error = True
             print('!===Not Enough Nodes===!')
+            print(Nodes_number)
             return
         for i in Nodes:
             if len(i)!=3:

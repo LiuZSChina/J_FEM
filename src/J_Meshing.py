@@ -47,7 +47,7 @@ def Edge_Center_2D(Node_Pos:list, curve:list = [])->list:
 
 
 # 划分平面三角形网格
-def Mesher_Tri_2D(Node_cloud:np.ndarray, max_volume:float = 0, max_shape_rate:float = 0, max_refine = 10,refine:bool = True) ->list[np.ndarray]:
+def Mesher_Tri_2D(Node_cloud:np.ndarray, max_volume:float = 0, max_shape_rate:float = 0, max_refine = 5000,refine:bool = True) ->list[np.ndarray]:
     print("=======Shape Must Be Convex=======")
     Meshes = Delaunay(Node_cloud).simplices
     ifgo = True
@@ -60,31 +60,53 @@ def Mesher_Tri_2D(Node_cloud:np.ndarray, max_volume:float = 0, max_shape_rate:fl
         cnt+=1
         ifgo = False
         Meshes = Delaunay(Node_cloud).simplices
+        min_meshes = Calc_Tri_2D_Size([list(Node_cloud[Meshes[0][0]]),list(Node_cloud[Meshes[0][1]]),list(Node_cloud[Meshes[0][2]])])
         for i in Meshes:
             Node_Pos = [list(Node_cloud[i[0]]),list(Node_cloud[i[1]]),list(Node_cloud[i[2]])]
-
+            Mesh_Size = Calc_Tri_2D_Size(Node_Pos)
+            if Mesh_Size < min_meshes:
+                min_meshes = Mesh_Size
             sp = Calc_Tri_2D_Shape_Rate(list(Node_Pos))
             rate = sp[0]
             long_edge = [sp[1], sp[2]]
+
+            if Mesh_Size<max_volume/3 or Mesh_Size<1.5*min_meshes:
+                ifgo = False
+                continue
+
             if max_shape_rate> 1.01 and rate > max_shape_rate:
                 ifgo = True
                 center = Edge_Center_2D(long_edge)
                 #print(center)
-                Node_cloud = np.append(Node_cloud,[center],axis=0)
+                if [center] not in Node_cloud:
+                    Node_cloud = np.append(Node_cloud,[center],axis=0)  # type: ignore
                 #continue
             
-            Mesh_Size = Calc_Tri_2D_Size(Node_Pos)
+            
             if max_volume>0 and Mesh_Size>max_volume:
                 ifgo = True
                 wc = Calc_Tri_2D_Weight_Center(Node_Pos)
-                Node_cloud = np.append(Node_cloud,[wc],axis=0)
+                if [wc] not in Node_cloud:
+                    Node_cloud = np.append(Node_cloud,[wc],axis=0)  # type: ignore
                 #print(Mesh_Size)
             
     Meshes = Delaunay(Node_cloud).simplices
     if cnt == max_refine and ifgo:
         print("=======Max Refine Times Reached But Not Finished=======")
-
+    print("Total Meshes =============== %d" %len(Meshes))
+    print("Total Nodes ================ %d" %len(Node_cloud))
     return [Node_cloud, Meshes]
+
+def print_mesh(points, Mesh, psize = [5,10]):
+    plt.figure(figsize=(10, 5)) 
+    plt.triplot(points[:, 0], points[:, 1], Mesh) 
+    plt.tick_params(labelbottom='off', labelleft='off', left='off', right='off', bottom='off', top='off') 
+    ax = plt.gca() 
+    plt.plot(points[:,0],points[:,1], marker = 'o',ls = "", c='r', ms = psize[0])
+    #plt.grid()
+    plt.axis('equal')
+    plt.show()
+
 
 if __name__ == '__main__':
     points = np.array([[0,0],[0.5,0],[1,0],[1.5,0],[2,0],[1.75,0.25],[1.5,0.5],[1.25,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]])

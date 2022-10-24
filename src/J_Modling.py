@@ -2,6 +2,7 @@ from fileinput import lineno
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 class Model_2D():
     def __init__(self) -> None:
         #geometray_list = [ ['l', [start x,start y],[end], split], ['r', [center, r],[start_rad, end_rad], split]... ]
@@ -42,10 +43,30 @@ class Model_2D():
         self.geometray_dict[number] = lin
         return True
     
+    #分解边
+    def split_edge_by_number(self, edge_number):
+        edge = self.geometray_dict[edge_number]
+        edge_type = edge[0]
+        sp_cnt = edge[3]
+        nd = []
+        if edge_type == 'l':
+            direc = [(edge[2][0]-edge[1][0])/float(sp_cnt), (edge[2][1]-edge[1][1])/float(sp_cnt)]
+            for i in range(sp_cnt+1):
+                nd.append([edge[1][0]+i*direc[0], edge[1][1]+i*direc[1]])
+        return nd
+            
+            
     #返回将边分解后的点坐标
     def get_init_nd(self,split_lines = True)->list:
         if split_lines:
-            return []
+            nd = []
+            for i in self.geometray_dict:
+                edge_nd = self.split_edge_by_number(i)
+                for j in edge_nd:
+                    if j not in nd:
+                        nd.append(j)
+
+            return nd
         return []
 
     def add_rec(self, rect_nodes:list) -> bool:
@@ -57,6 +78,6 @@ if __name__ == "__main__":
     md.add_line_auto_number([[1,1,0], [0,0,0]], split=10) 
     md.add_line_auto_number([[0,0,0], [1,0,0]], split=5) 
     md.add_line_auto_number([[1,0,0], [1,1,0]], split=5) 
-    
+    print(md.get_init_nd())
     #md.add_rec([[1,0,0], [2,0,0], [2,1,0], [1,1,0]]) 
     md.draw_model()
