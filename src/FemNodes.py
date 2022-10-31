@@ -129,6 +129,8 @@ class Fem_Nodes():
 
     #寻找坐标范围内的节点 cord_range:{'x\y\z':[start,end]} eg{'y':[0,0]}
     def Find_Nodes_Cord_Range(self, cord_range:dict)->list:
+        """ # 给定节点满足的x、y、z条件 eg->(x==..)
+            返回满足的所有节点编号"""
         nd_list = []
         c_range_list = [None, None, None]
         for key in cord_range:

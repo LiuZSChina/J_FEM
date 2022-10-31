@@ -2,7 +2,7 @@ import meshio
 
 
 def FemSave(points:list, cells:dict, f_name:str, point_data:dict = {}, cell_data:dict = {}):
-    """# Save points cells and some data
+    """# Save points, cells and some data
     points = [
         [0.0, 0.0],
         [1.0, 0.0],

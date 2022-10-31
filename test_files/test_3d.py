@@ -168,4 +168,4 @@ for key in a['Strain']:
     x[key] = a['Displacement'][int(2*node)]
 end_time = ti.time()
 print("Run Time:", (end_time - start_time))
-post.Post_DeformedShape_UdeformedEdge(a['Displacement'],Scaler=10000) #, value=x
+post.Post_DeformedShape_Undeformed_Edge(a['Displacement'],Scaler=10000) #, value=x

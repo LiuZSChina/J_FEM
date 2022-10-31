@@ -54,7 +54,7 @@ class Post_3D():
         return {'x':x_disp,'y':y_disp, 'z':z_disp}
 
     #后处理 变形后形状与变形前框架
-    def Post_DeformedShape_UdeformedEdge(self,Solved_disp,Scaler=1, Force_display = False):
+    def Post_DeformedShape_Undeformed_Edge(self,Solved_disp,Scaler=1, Force_display = False):
         #print(self.Node_cnt)
         if self.Node_cnt>1000:
             print('!====> Too many nodes, Stop Displaying <====!')

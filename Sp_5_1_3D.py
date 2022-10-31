@@ -41,6 +41,7 @@ with pygmsh.geo.Geometry() as geom:
 if 0:
     exit()
 
+
 """
 第二步,转换网格为可以用的形式。
 """
@@ -68,18 +69,6 @@ if 0:
         i.Draw_Elm()
 
 
-refine_cnt = 0
-for t in range(refine_cnt):
-    print('---Refining Meshes &%d ---'%t)
-    total = 0
-    for j in Fem_Elms_class.Elm_dict:
-        if j > total:
-            total = j
-    for i in range(total+1):
-        Fem_Elms_class.Elm_dict[i].split_mesh_3(Fem_Elms_class)
-
-
-
 """
 第三步: 定义求解器 并且加载
 """
@@ -94,8 +83,7 @@ F = 300.0/float(len(x0))
 for i in x0:
     Sov.Payload(i,[0,0,-F])
 
-
-
+# 固定边界
 x0 = Nd.Find_Nodes_Cord_Range({'x':[0]})
 #print(x0)
 for i in x0:
@@ -148,7 +136,7 @@ dic_xyz = post.get_points_displacement(a['Displacement'],Scaler=100)
 
 src.FemSave.FemSave(list(pdf), {"tetra":list(Mesh)}, save_name, cell_data=dic_xyz)
 
-#查看2、3节点处的位移
+#查看给定位置处的位移
 print('\n========================> Node Displacement <========================')
 scaler = 1000 #米化为毫米
 x0 = Nd.Find_Nodes_Cord_Range({'x':[1e-1]})
@@ -170,4 +158,4 @@ for key in a['Strain']:
     x[key] = a['Displacement'][int(2*node)]
 end_time = ti.time()
 print("Run Time:", (end_time - start_time))
-post.Post_DeformedShape_UdeformedEdge(a['Displacement'],Scaler=100) #, value=x
+post.Post_DeformedShape_Undeformed_Edge(a['Displacement'],Scaler=100) #, value=x
