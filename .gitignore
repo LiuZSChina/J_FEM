@@ -2,3 +2,5 @@
 /poker_keyboard/build/
 **/__pycache__
 **.__pycache__
+**.msh
+**.vtk

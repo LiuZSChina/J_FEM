@@ -1,14 +1,19 @@
+from turtle import pos
 import src.FemNodes
 import src.FemElement
 import src.FemSolver
+import src.FemSave
+import src.FemPostProc
 import src.J_Meshing
 import src.J_Modling
 import numpy as np
-import pygmsh
+import pygmsh, test
 import numba
 import time as ti
 start_time = ti.time()
 
+
+model_file = "test_3D.vtk"
 """
 第一步,先建模。
 """
@@ -22,18 +27,20 @@ with pygmsh.geo.Geometry() as geom:
             [1, 1],
             [0, 1],
         ],
-        mesh_size=0.1,
+        mesh_size=0.7,
     )
-    geom.extrude(poly, [0.0, 0.0, 1.0], num_layers=10)   # type: ignore
+    geom.extrude(poly, [0.0, 0.0, 1.0], num_layers=4)   # type: ignore
     mesh = geom.generate_mesh()
     #pygmsh.write("Script_5_1.msh")
-    mesh.write("test_3D.vtk")
+    #mesh.write("test_3D.vtk")
+    points = mesh.points
+    Mesh = mesh.get_cells_type("tetra")
+    src.FemSave.FemSave(list(points), {"tetra":list(Mesh)}, model_file)
 
 """
 第二步,转换网格为可以用的形式。
 """
-points = mesh.points
-Mesh = mesh.get_cells_type("tetra")
+
 #print(points)
 #print(Mesh)
 #绘制以供检查
@@ -135,14 +142,18 @@ a = Sov.solve()
 """
 第五步: 后处理
 """
+post = src.FemPostProc.Post_3D(Nd,Fem_Elms_class)
+
+pdf,cdf = post.Get_Deformed_Nodes(a['Displacement'],Scaler=10000)
+src.FemSave.FemSave(list(pdf), {"tetra":list(Mesh)}, "test_deform.vtk")
 #查看2、3节点处的位移
 print('\n========================> Node Displacement <========================')
 scaler = 1000 #米化为毫米
 x0 = Nd.Find_Nodes_Cord_Range({'z':[1]})
 avg = 0
 for i in x0:
-    print('Node%d:'%i,str(Sov.Post_Node_Displacement(a['Displacement'],i,scaler)))
-    avg += Sov.Post_Node_Displacement(a['Displacement'],i,scaler)['z']
+    print('Node%d:'%i,str(post.Post_Node_Displacement(a['Displacement'],i,scaler)))
+    avg += post.Post_Node_Displacement(a['Displacement'],i,scaler)['z']
 avg = avg/len(x0)
 print("Average Displacement at z direction",avg)
 #Sov.Draw_Mesh()
@@ -157,4 +168,4 @@ for key in a['Strain']:
     x[key] = a['Displacement'][int(2*node)]
 end_time = ti.time()
 print("Run Time:", (end_time - start_time))
-Sov.Post_DeformedShape_UdeformedEdge(a['Displacement'],Scaler=10000) #, value=x
+post.Post_DeformedShape_UdeformedEdge(a['Displacement'],Scaler=10000) #, value=x
