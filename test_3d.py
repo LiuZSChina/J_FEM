@@ -12,39 +12,28 @@ start_time = ti.time()
 """
 第一步,先建模。
 """
+import pygmsh
+
 with pygmsh.geo.Geometry() as geom:
     poly = geom.add_polygon(
         [
             [0.0, 0.0],
-            [1.0e-1, 0],
-            [1.0e-1, 2e-2],
-            [0, 2e-2],
+            [1.0, 0],
+            [1, 1],
+            [0, 1],
         ],
-        mesh_size=2e-3,
+        mesh_size=0.1,
     )
-    field0 = geom.add_boundary_layer(
-        nodes_list=[poly.points[0]],
-        lcmin=1e-4,
-        lcmax=4e-3,
-        distmin=1e-3,
-        distmax=5e-3,
-    )
-    field1 = geom.add_boundary_layer(
-        nodes_list=[poly.points[0]],
-        lcmin=2e-3,
-        lcmax=4e-3,
-        distmin=5e-3,
-        distmax=20e-3,
-    )
-    geom.set_background_mesh([field0, field1], operator="Min")
+    geom.extrude(poly, [0.0, 0.0, 1.0], num_layers=10)   # type: ignore
     mesh = geom.generate_mesh()
-    pygmsh.write("Script_5_1.msh")
-    mesh.write("Script_5_1.vtk")
+    #pygmsh.write("Script_5_1.msh")
+    mesh.write("test_3D.vtk")
+
 """
 第二步,转换网格为可以用的形式。
 """
 points = mesh.points
-Mesh = mesh.get_cells_type("triangle")
+Mesh = mesh.get_cells_type("tetra")
 #print(points)
 #print(Mesh)
 #绘制以供检查
@@ -60,13 +49,14 @@ Nd.Add_Fem_Nodes_Auto_Number(points) #将生成的节点做成有限元使用的
 
 # 生成单元
 Fem_Elms_class = src.FemElement.Element_Group(Nd)
-Material = {'E':2.1e11,'t':1e-2,'v':0.3}
+Material = {'E':1e11,'t':1e-2,'v':0.3}
 solve_type = '2d_stress'
 #print(Nd.Fem_Nodes_count)
 for i in Mesh:
-    Fem_Elms_class.Add_Elm_Auto_Number('T3_2d', i, Material, pv=[solve_type])
+    Fem_Elms_class.Add_Elm_Auto_Number('T4_3d', i, Material, pv=[solve_type])
 # 可选，绘制单元供检查
 #print(len(Fem_Elms))
+#Fem_Elms_class.Elm_list[0].Draw_Elm()
 if 0:
     for i in Fem_Elms_class.Elm_list:
         i.Draw_Elm()
@@ -88,29 +78,35 @@ for t in range(refine_cnt):
 第三步: 定义求解器 并且加载
 """
 Fem_Elms = Fem_Elms_class.Elm_list
-Sov = src.FemSolver.Solver_Static_2D(Nd,Fem_Elms)
+Sov = src.FemSolver.Solver_Static_3D(Nd,Fem_Elms)
 
 #载荷施加
-x0 = Nd.Find_Nodes_Cord_Range({'x':[1e-1]})
-F = 300.0/float(len(x0))
+x0 = Nd.Find_Nodes_Cord_Range({'z':[1]})
+#print(x0)
+F = 100000.0/float(len(x0))
 #print(F)
 for i in x0:
-    Sov.Payload(i,[0,-F])
+    Sov.Payload(i,[0,0,-F])
 
-"""
-Sov.Payload(5,[100,0])
-Sov.Payload(11,[100,0])
-Sov.Payload(17,[100,0])
-"""
 
-"""Sov.Payload(5,[0,-0])
-Sov.Payload(11,[0,-300])
-Sov.Payload(17,[0,-0])"""
-x0 = Nd.Find_Nodes_Cord_Range({'x':[0]})
+
+x0 = Nd.Find_Nodes_Cord_Range({'z':[0]})
+#print(x0)
 for i in x0:
-    Sov.Displacement(i,[0,''])
-cent = Nd.Find_Nodes_by_Coord([0,0])
-Sov.Displacement(cent,[0,0])
+    Sov.Displacement(i,['','',0])
+
+x0 = Nd.Find_Nodes_Cord_Range({'x':[0], 'z':[0]})
+#print(x0)
+for i in x0:
+    Sov.Displacement(i,[0,'',0])
+
+x0 = Nd.Find_Nodes_Cord_Range({'y':[0], 'z':[0]})
+#print(x0)
+for i in x0:
+    Sov.Displacement(i,['',0,0])
+
+cent = Nd.Find_Nodes_by_Coord([0,0,0])
+Sov.Displacement(cent,[0,0,0])
 
 
 # 可选，查看整体刚度矩阵
@@ -142,10 +138,14 @@ a = Sov.solve()
 #查看2、3节点处的位移
 print('\n========================> Node Displacement <========================')
 scaler = 1000 #米化为毫米
-x0 = Nd.Find_Nodes_Cord_Range({'x':[1e-1]})
+x0 = Nd.Find_Nodes_Cord_Range({'z':[1]})
+avg = 0
 for i in x0:
     print('Node%d:'%i,str(Sov.Post_Node_Displacement(a['Displacement'],i,scaler)))
-# Sov.Draw_Mesh()
+    avg += Sov.Post_Node_Displacement(a['Displacement'],i,scaler)['z']
+avg = avg/len(x0)
+print("Average Displacement at z direction",avg)
+#Sov.Draw_Mesh()
 #input('Enter to exit')
 x = {}
 for key in a['Strain']:
@@ -157,4 +157,4 @@ for key in a['Strain']:
     x[key] = a['Displacement'][int(2*node)]
 end_time = ti.time()
 print("Run Time:", (end_time - start_time))
-Sov.Post_DeformedShape_UdeformedEdge(a['Displacement'],Scaler=100, value=x)
+Sov.Post_DeformedShape_UdeformedEdge(a['Displacement'],Scaler=10000) #, value=x

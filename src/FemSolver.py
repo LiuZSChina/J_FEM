@@ -1,6 +1,5 @@
 import math
-from tkinter.messagebox import NO
-from turtle import pos
+from random import random
 import numpy as np
 import matplotlib.patches as mpatch
 import matplotlib.pyplot as plt
@@ -18,6 +17,18 @@ except ModuleNotFoundError:
     import src.FemElement
 
 
+def get_color_with_max_value(value, max_I):
+    rgb_r = max(0,(value-(max_I/2))/(max_I/2))
+    rgb_b = max(0,((max_I-value)-max_I/2)/(max_I/2) )
+    rgb_g = (value/max_I)*(1-value/max_I)
+    cl = [rgb_r, rgb_g, rgb_b]
+    max_hue = max(cl)
+    multi = 1/max_hue
+    for value in range(len(cl)):
+        cl[value] *= multi
+    return cl
+
+
 class Solver_Static_2D():
     def __init__(self, Nd, EleList) -> None:
 
@@ -31,7 +42,8 @@ class Solver_Static_2D():
             print(word)
             exit()
         print(word)
-        
+        self.color_map = self.Get_colors()
+        print(self.color_map)
         # 载荷矩阵
         self.Groupe_P = np.zeros((2*self.Node_cnt,1))
         print('---Got Mat P')
@@ -112,15 +124,22 @@ class Solver_Static_2D():
         plt.axis('equal')
         plt.show()
 
+    #获得绘图所需要的颜色
+    def Get_colors(self, dim = 16):
+        c = []
+        for i in range(dim):
+            c.append(get_color_with_max_value(i,dim))
+        return c
+
     #后处理，获得节点位移
-    def Post_Node_Displacement(self,Displacement,Node_number,scaler=1):
+    def Post_Node_Displacement(self,Displacement,Node_number:int,scaler=1):
         Node_number = int(Node_number)
         x_disp = scaler*Displacement[Node_number*2][0]
         y_disp = scaler*Displacement[Node_number*2+1][0]
         return {'x':x_disp,'y':y_disp}
 
     #后处理 变形后形状与变形前框架
-    def Post_DeformedShape_UdeformedEdge(self,Solved_disp,Scaler=1, Force_display=False):
+    def Post_DeformedShape_UdeformedEdge(self,Solved_disp, Scaler=1, value ={}, Force_display=False):
         if self.Node_cnt>10000:
             print('!====> Too many nodes, Stop Displaying <====!')
             print('!====> Set Force_display = True to display!')
@@ -145,6 +164,14 @@ class Solver_Static_2D():
         fig,ax =plt.subplots()
 
         #绘制变形后结果
+        max_value = 1
+        min_value = 0
+        if value != {}:
+            value_l = []
+            for key in value:
+                value_l.append(value[key])
+            max_value = max(value_l)
+            min_value = min(value_l)
         for i in self.ElementGroup:
             points = []
             nd_num = i.Nd_number
@@ -153,7 +180,13 @@ class Solver_Static_2D():
                 x = Deformed_a[2*nd][0]
                 y = Deformed_a[2*nd+1][0]
                 points.append([x,y])
-            Deformed_Shape = mpatch.Polygon(points)
+
+            portion = 8
+            if value != {}:
+                elm_num = i.number
+                portion = int((value[elm_num] - min_value)*15/(max_value- min_value))
+            cl = self.color_map[portion]
+            Deformed_Shape = mpatch.Polygon(points, color = cl)
             ax.add_patch(Deformed_Shape)      
         de_nd = []
         for i_f in range(self.Node_cnt):
@@ -161,9 +194,10 @@ class Solver_Static_2D():
             x = Deformed_a[2*i]
             y = Deformed_a[2*i + 1]
             de_nd.append([x,y])
-        for i in de_nd:
+
+        """for i in de_nd:
             #plt.scatter(i[0],i[1], c='m', s=10, label='Nodes')
-            plt.plot(i[0], i[1],c='m', marker='.',ls="",ms=10)
+            plt.plot(i[0], i[1],c='m', marker='.',ls="",ms=10)"""
 
         #绘制变形前的框架
         for i in self.ElementGroup:
@@ -173,7 +207,7 @@ class Solver_Static_2D():
                 Pos = i.Nd_i_j_m[j]
                 x.append(Pos[0])
                 y.append(Pos[1])                   
-            ax.plot(x,y,c='y',linestyle = 'dashed')
+            ax.plot(x,y,c='y',linestyle = 'dashed', lw = 0.4)
         plt.title('Deformed Shape with Undeformed Edge \nDisplacement scal=%s'%Scaler)
         plt.axis('equal')
         plt.show()
@@ -417,8 +451,14 @@ class Solver_Static_3D():
         return {'x':x_disp,'y':y_disp, 'z':z_disp}
 
     #后处理 变形后形状与变形前框架
-    def Post_DeformedShape_UdeformedEdge(self,Solved_disp,Scaler=1):
+    def Post_DeformedShape_UdeformedEdge(self,Solved_disp,Scaler=1, Force_display = False):
+        print(self.Node_cnt)
         if self.Node_cnt>1000:
+            print('!====> Too many nodes, Stop Displaying <====!')
+            print('!====> Set Force_display = True to display!')
+            if Force_display == False:
+                return
+        if self.Node_cnt>200:
             print('!====> Too many nodes, display maybe very slow <====!')
         # 获得有节点的坐标
         Init_a = np.zeros((3*self.Node_cnt, 1))
@@ -456,6 +496,7 @@ class Solver_Static_3D():
             #print(Elm_Nd_number)
             Elm_idj = []
             for j in Elm_Nd_number:
+                j = int(j)
                 Elm_idj.append([Deformed_a[3*j][0] , Deformed_a[3*j+1][0] , Deformed_a[3*j+2][0] ])
             # 画各个面和边线
             #print(Elm_idj)
@@ -593,7 +634,7 @@ class Solver_Static_3D():
         number = []
         for i in self.ElementGroup:
             self.Total_Dof += i.Dof
-            if i.Warning == True:
+            if i.Error == True:
                 return False, 'Element Warning on No.%s' %i.number
             if i.number in number:
                 return False, 'More Than One Elements Have Same Number:%s'%i.number

@@ -95,12 +95,14 @@ class Fem_Nodes():
 
     def PrintFemNodes2d(self,Size=[10,20]):
         plt.figure()
+        plt.ion()
         print('Plotting Nodes')
         for k in self.Fem_Nodes_Dic:
             plt.text(self.Fem_Nodes_Dic[k][0],self.Fem_Nodes_Dic[k][1],k,ha='center',va='bottom',fontsize=Size[1])
             plt.plot(self.Fem_Nodes_Dic[k][0],self.Fem_Nodes_Dic[k][1], c='red', marker='o',ls="")
         plt.axis('equal')
         plt.show()
+        #plt.close()
 
     #寻找某条线上的节点 Line:[start:[x,y,z], end:[x,y,z]]
     def Find_Nodes_on_Line(self, Line:list)->list:
@@ -108,6 +110,22 @@ class Fem_Nodes():
         direction = [Line[1][0]-Line[0][0], Line[1][1]-Line[0][1] ,Line[1][2]-Line[0][2]]
         print("_________________________________________UNFINISHED(Find_Nodes_on_Line)______________________________________________")
         return nd_list
+
+    #寻找某个坐标的节点 [x,y,z]
+    def Find_Nodes_by_Coord(self, Pos:list)->list:
+        for i in self.Fem_Nodes_Dic:
+            xyz = self.Fem_Nodes_Dic[i]
+            if xyz[0] != Pos[0]:
+                continue
+            elif xyz[1] != Pos[1]:
+                continue
+            if len(Pos) == 2:
+                return i
+            elif xyz[2] != Pos[2]:
+                continue
+            return i
+            
+        return []
 
     #寻找坐标范围内的节点 cord_range:{'x\y\z':[start,end]} eg{'y':[0,0]}
     def Find_Nodes_Cord_Range(self, cord_range:dict)->list:

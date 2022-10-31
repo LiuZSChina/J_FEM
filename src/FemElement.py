@@ -28,6 +28,15 @@ class Element_Group():
             elm = Triangle3Node_2d(i,Nd_list,self.Nd_class,Material,pv[0])
             self.Elm_list.append(elm)
             self.Elm_dict[i] = elm
+        
+        elif elm_type == 'T4_3d':
+            for j in Nd_list:
+                if j not in self.Nd_class.Fem_Nodes_Dic:
+                    print("Problem!")
+                    exit()
+            elm = Tera4Node_3d(i,Nd_list,self.Nd_class,Material)
+            self.Elm_list.append(elm)
+            self.Elm_dict[i] = elm
         return i
 
     def Add_Elm_With_Number(self, elm_type, Number, Nd_list:list, Material:dict, pv=[]) -> int:
@@ -59,7 +68,7 @@ class Triangle3Node_2d():
         if len(Nodes)!=3:
             self.Error = True
             print('!===Not Enough Nodes===!')
-            print(Nodes_number)
+            #print(Nodes_number)
             return
         for i in Nodes:
             if len(i)!=3:
@@ -345,19 +354,19 @@ class Tera4Node_3d(): #tetrahedron
     # Elm_num -->单元编号 Nodes_number-->[i,j,m]结点编号; Node_classs--> class Fem_Nodes();  MaterialProp-->{'E':弹性模量pa,'v':泊松比,'t':厚度m，}
     def __init__(self,Elm_num,Nodes_number,Nodes_class,MaterialProp) -> None:
         self.Dof = 12
-        self.Warning = False
+        self.Error = False
         self.number = Elm_num
         self.MaterialProp = MaterialProp
         #得到节点坐标
         Nodes = Nodes_class.GetFemNodes(Nodes_number)
         #判断节点坐标是否满足要求————平面，三个
         if len(Nodes)!=4:
-            self.Warning = True
+            self.Error = True
             print('!===Not Enough Nodes===!')
             return
         for i in Nodes:
             if len(i)!=3:
-                self.Warning = True
+                self.Error = True
                 print('!===Node Dim ERR===!')
                 return
 
@@ -385,7 +394,7 @@ class Tera4Node_3d(): #tetrahedron
         self.Volume = self.calc_volume()
         #print("Volume is :%f"%self.Volume)
         if self.Volume == 0:#如果面积为0则矩阵出现问题
-            self.Warning = True
+            self.Error = True
             print('!===ELm Volume = 0===!')
             return
 
@@ -448,7 +457,7 @@ class Tera4Node_3d(): #tetrahedron
             E0 = Material['E']
             v0 = Material['v']
         except KeyError:
-            self.Warning = True
+            self.Error = True
             return np.ndarray((0))
 
         #计算弹性矩阵

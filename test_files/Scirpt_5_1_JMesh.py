@@ -4,65 +4,46 @@ import src.FemSolver
 import src.J_Meshing
 import src.J_Modling
 import numpy as np
-import pygmsh
-import numba
-import time as ti
-start_time = ti.time()
+
 
 """
 第一步,先建模。
 """
-with pygmsh.geo.Geometry() as geom:
-    poly = geom.add_polygon(
-        [
-            [0.0, 0.0],
-            [1.0e-1, 0],
-            [1.0e-1, 2e-2],
-            [0, 2e-2],
-        ],
-        mesh_size=2e-3,
-    )
-    field0 = geom.add_boundary_layer(
-        nodes_list=[poly.points[0]],
-        lcmin=1e-4,
-        lcmax=4e-3,
-        distmin=1e-3,
-        distmax=5e-3,
-    )
-    field1 = geom.add_boundary_layer(
-        nodes_list=[poly.points[0]],
-        lcmin=2e-3,
-        lcmax=4e-3,
-        distmin=5e-3,
-        distmax=20e-3,
-    )
-    geom.set_background_mesh([field0, field1], operator="Min")
-    mesh = geom.generate_mesh()
-    pygmsh.write("Script_5_1.msh")
-    mesh.write("Script_5_1.vtk")
+Model = src.J_Modling.Model_2D()
+
+sp_cnt = 2
+Model.add_line_auto_number([[0,0,0], [1e-1,0,0]], split=3*sp_cnt) 
+Model.add_line_auto_number([[1e-1,0,0], [1e-1,2e-2,0]], split=1*sp_cnt)
+#Model.add_line_auto_number([[9e-2,1e-2,0], [1e-2,1e-2,0]], split=int(0.4*sp_cnt)) 
+#Model.add_line_auto_number([[9.8e-2,0.5e-2,0], [0.6e-2,0.5e-2,0]], split=int(2*sp_cnt)) 
+Model.add_line_auto_number([[9.25e-2,1e-2,0], [0.75e-2,1e-2,0]], split=int(2*sp_cnt)) 
+#Model.add_line_auto_number([[9.6e-2,1.5e-2,0], [0.4e-2,1.5e-2,0]], split=int(2*sp_cnt)) 
+Model.add_line_auto_number([[1e-1,2e-2,0], [0,2e-2,0]], split=3*sp_cnt) 
+Model.add_line_auto_number([[0,2e-2,0], [0,0,0]], split=1*sp_cnt) 
+
+if 1:
+    Model.draw_model()
+
 """
-第二步,转换网格为可以用的形式。
+第二步,自动网格划分获得一组节点以及三角形元素。
 """
-points = mesh.points
-Mesh = mesh.get_cells_type("triangle")
-#print(points)
-#print(Mesh)
+points = np.array(Model.get_init_nd()) #获取种子节点
+points, Mesh = src.J_Meshing.Mesher_Tri_2D(points, max_volume=4e-6, max_shape_rate=2, refine=False) #生成网格 2e-5
+
 #绘制以供检查
-#src.J_Meshing.print_mesh(points,Mesh)
+src.J_Meshing.print_mesh(points,Mesh)
 
 Nd = src.FemNodes.Fem_Nodes()
-points = [list(i) for i in points] #转化为3维的坐标
+points = [list(i)+[0] for i in points] #转化为3维的坐标
 Nd.Add_Fem_Nodes_Auto_Number(points) #将生成的节点做成有限元使用的类型
 
 #Nd.PrintFemNodes2d() # 可选，绘制设置好的节点供检查
-#end_time = ti.time()
-#print("Plot Time:", (end_time - start_time))
 
 # 生成单元
 Fem_Elms_class = src.FemElement.Element_Group(Nd)
 Material = {'E':2.1e11,'t':1e-2,'v':0.3}
 solve_type = '2d_stress'
-#print(Nd.Fem_Nodes_count)
+print(Nd.Fem_Nodes_count)
 for i in Mesh:
     Fem_Elms_class.Add_Elm_Auto_Number('T3_2d', i, Material, pv=[solve_type])
 # 可选，绘制单元供检查
@@ -72,7 +53,7 @@ if 0:
         i.Draw_Elm()
 
 
-refine_cnt = 0
+refine_cnt = 3
 for t in range(refine_cnt):
     print('---Refining Meshes &%d ---'%t)
     total = 0
@@ -109,8 +90,7 @@ Sov.Payload(17,[0,-0])"""
 x0 = Nd.Find_Nodes_Cord_Range({'x':[0]})
 for i in x0:
     Sov.Displacement(i,[0,''])
-cent = Nd.Find_Nodes_by_Coord([0,0])
-Sov.Displacement(cent,[0,0])
+Sov.Displacement(6,[0,0])
 
 
 # 可选，查看整体刚度矩阵
@@ -130,11 +110,10 @@ if 0:
 第四步: 求解
 """
 print('\n========================> Solving Problem <========================')
-
 a = Sov.solve()
-#print(a)
-#print('\nDisplacement------------------')
+print('\nDisplacement------------------')
 #print(a['Stress'])
+
 
 """
 第五步: 后处理
@@ -147,14 +126,4 @@ for i in x0:
     print('Node%d:'%i,str(Sov.Post_Node_Displacement(a['Displacement'],i,scaler)))
 # Sov.Draw_Mesh()
 #input('Enter to exit')
-x = {}
-for key in a['Strain']:
-    x[key] = abs(a['Strain'][key][0][0])
-
-for key in a['Strain']:
-    node = Fem_Elms_class.Elm_dict[key].Nd_number[0]
-    #print(a['Displacement'][int(node)])
-    x[key] = a['Displacement'][int(2*node)]
-end_time = ti.time()
-print("Run Time:", (end_time - start_time))
-Sov.Post_DeformedShape_UdeformedEdge(a['Displacement'],Scaler=100, value=x)
+Sov.Post_DeformedShape_UdeformedEdge(a['Displacement'],100)
