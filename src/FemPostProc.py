@@ -3,14 +3,102 @@ import matplotlib.patches as mpatch
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection, Line3D
 from scipy.spatial import Delaunay
+import math
+
+def calc_main_stress(xyzstress:list):
+    #print(xyzstress)
+    main_stress = []
+    for i in range(3):
+        temp1 = (xyzstress[i][0]+xyzstress[(i+1)%3][0])/2.0
+        temp2 = ((xyzstress[i][0]-xyzstress[(i+1)%3][0])/2.0) * ((xyzstress[i][0]-xyzstress[(i+1)%3][0])/2.0)
+        temp2 += xyzstress[i + 3][0] * xyzstress[i + 3][0] /4
+        temp2 = math.sqrt(temp2)
+        sigma1 = temp1+temp2
+        sigma2 = temp1-temp2
+        main_stress.append(sigma1)
+        main_stress.append(sigma2)
+        """if sigma1 not in main_stress:
+            main_stress.append(sigma1)
+        if sigma2 not in main_stress:
+            main_stress.append(sigma2)
+        # print(main_stress)"""
+    main_stress.sort()
+    return main_stress
+
+def calc_von_stress(xyz_stress:list) -> float:
+    vons = ( xyz_stress[0][0] - xyz_stress[1][0] )**2 + ( xyz_stress[2][0] - xyz_stress[1][0] )**2
+    vons += ( xyz_stress[0][0] - xyz_stress[2][0] )**2
+    vons += ( xyz_stress[3][0]**2 + xyz_stress[4][0]**2 + xyz_stress[5][0]**2)*6
+    vons = math.sqrt(vons/2)
+    return vons
 
 class Post_3D():
     def __init__(self, ND_class, ELM_class):
         self.Node, self.Node_cnt = ND_class.GetFemNodesAll()
         self.Element = ELM_class
         self.ElementGroup =  self.Element.Elm_list
+        self.Elm_count = len(self.ElementGroup)
         pass
     
+    # 获得主应力
+    def calc_main_stress(self, xyzstress):
+        return calc_main_stress(xyzstress)
+
+    # 获得单元内的应力，x,y,z,exy,exz,eyz,vonmises
+    def get_cell_stress(self, elm_value:dict):
+        stress_dict = {}
+        x_value = [0]*self.Elm_count
+        y_value = [0]*self.Elm_count
+        z_value = [0]*self.Elm_count
+        von_value = [0]*self.Elm_count
+
+        for i in elm_value:
+            x_value[i] = elm_value[i][0]
+            y_value[i] = elm_value[i][1]
+            z_value[i] = elm_value[i][2]
+            von_value[i] = calc_von_stress(list(elm_value[i])) # type:ignore
+            
+        stress_dict['stress_x'] = [x_value]
+        stress_dict['stress_y'] = [y_value]
+        stress_dict['stress_z'] = [z_value]
+        stress_dict['stress_von'] = [von_value]
+
+        return stress_dict
+        pass 
+
+    # 获得节点处的应力值
+    def get_stress_nd(self, elm_stress:dict):
+        nd_stress = {'stress_nd_x':[0]*self.Node_cnt, 
+                     'stress_nd_y':[0]*self.Node_cnt, 
+                     'stress_nd_z':[0]*self.Node_cnt,
+                     'stress_nd_von_mises':[0]*self.Node_cnt}
+        for nd in self.Node:
+            Elm = []
+            vol_all = 0
+            sx = 0
+            sy = 0
+            sz = 0
+            svon = 0
+            for el in self.ElementGroup:
+                if el.have_node(nd):
+                    Elm.append(el)
+            for e in Elm:
+                vol_all += e.Volume
+                sx += e.Volume * elm_stress[e.number][0]
+                sy += e.Volume * elm_stress[e.number][1]
+                sz += e.Volume * elm_stress[e.number][2]
+                svon += e.Volume * calc_von_stress(elm_stress[e.number])
+            sx = sx/vol_all
+            sy = sy/vol_all
+            sz = sz/vol_all
+            svon = svon/vol_all
+            nd_stress['stress_nd_x'][nd] = sx
+            nd_stress['stress_nd_y'][nd] = sy
+            nd_stress['stress_nd_z'][nd] = sz
+            nd_stress['stress_nd_von_mises'][nd] = svon
+
+        return nd_stress
+
     # 获得变形后的节点位置
     def Get_Deformed_Nodes(self, Solved_disp, Scaler=1):
         # 获得有节点的坐标
@@ -38,11 +126,11 @@ class Post_3D():
         """获得 x y z 方向上的节点位移"""
         Displacement = np.zeros((3*self.Node_cnt, 1))
         Displacement = Scaler*Solved_disp
-        Deformed_Node_dict = {'x':[],'y':[],'z':[]}
+        Deformed_Node_dict = {'disp_x':[],'disp_y':[],'disp_z':[]}
         for i in range(self.Node_cnt):
-            Deformed_Node_dict['x'].append(Displacement[3*i])
-            Deformed_Node_dict['y'].append(Displacement[3*i + 1])
-            Deformed_Node_dict['z'].append(Displacement[3*i + 2])
+            Deformed_Node_dict['disp_x'].append(Displacement[3*i])
+            Deformed_Node_dict['disp_y'].append(Displacement[3*i + 1])
+            Deformed_Node_dict['disp_z'].append(Displacement[3*i + 2])
         return Deformed_Node_dict
 
     #后处理，获得节点位移

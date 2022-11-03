@@ -24,9 +24,9 @@ with pygmsh.geo.Geometry() as geom:
             [1.0e-1, 1e-2],
             [0, 1e-2],
         ],
-        mesh_size=2e-3,
+        mesh_size=7e-3,
     )
-    geom.extrude(poly, [0.0, 0.0, 2e-2], num_layers=12)   # type: ignore
+    geom.extrude(poly, [0.0, 0.0, 2e-2], num_layers=3)   # type: ignore
     mesh = geom.generate_mesh()
     #pygmsh.write("Script_5_1.msh")
 
@@ -134,8 +134,7 @@ post = src.FemPostProc.Post_3D(Nd,Fem_Elms_class)
 pdf,cdf = post.Get_Deformed_Nodes(a['Displacement'],Scaler=100)
 dic_xyz = post.get_points_displacement(a['Displacement'],Scaler=100)
 stress = post.get_cell_stress(a['Stress'])
-#stress_nd = post.get_stress_nd(a['Stress'])
-#dic_xyz.update(stress_nd)
+
 c_data = stress
 src.FemSave.FemSave(list(pdf), {"tetra":list(Mesh)}, save_name, point_data=dic_xyz, cell_data=c_data)
 
@@ -163,4 +162,4 @@ end_time = ti.time()
 print("Run Time:", (end_time - start_time))
 post.Post_DeformedShape_Undeformed_Edge(a['Displacement'],Scaler=100) #, value=x
 #print(a['Stress'][1])
-#print(post.calc_main_stress(list(a['Stress'][2])))
+print(post.calc_main_stress(list(a['Stress'][2])))

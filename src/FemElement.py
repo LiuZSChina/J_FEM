@@ -403,7 +403,11 @@ class Tera4Node_3d(): #tetrahedron
         
         self.Element_P = [0]*12
         return
-
+        
+    # 判断这个元素是否有这个节点
+    def have_node(self,nd_number):
+        if nd_number in self.Nd_number:
+            return True
     # 计算单元体积
     def calc_volume(self):
         matrix_v = np.ones((4,4))
