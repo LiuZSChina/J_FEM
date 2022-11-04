@@ -316,7 +316,7 @@ class Solver_Static_3D():
     def __init__(self, Nd, EleList) -> None:
         self.Solver_Type = "3D"
         self.Node, self.Node_cnt = Nd.GetFemNodesAll()
-        self.ElementGroup = EleList
+        self.ElementGroup = EleList # 所有元素class 组成的list
         self.Total_Dof = 0
         #判断节点可用
         nNc,word = self.Node_Elment_Number_Check()
@@ -543,14 +543,16 @@ class Solver_Static_3D():
     # 整体刚度矩阵
     def Calc_Grouped_E(self):
         Gr_E = lil_matrix((self.Node_cnt*3, self.Node_cnt*3))
+        elm_count = len(self.ElementGroup)
         #print(Gr_E==0)
-        print('---',end='')
+        #print('---',end='')
+        print('---Calculating E: 000%', end='')
         for i in self.ElementGroup:
-            if i.number%100000 == 10001 and i.number>10005:
-                print('\n---',end='')
-            if i.number%10000 == 1 and i.number!=1:
-                print('ElmE at %s; '%i.number, end='')
-            
+            #print('\n---',end='')
+            if i.number%100 == 1 and i.number!=1:
+                print("\r", end='', flush=True)
+                print('---Calculating E: %03d%%'%(100*i.number/elm_count), end='')
+                #print(time.strftime("当前时间为：%Y-%m-%d %H:%M:%S", time.localtime()), end="")
             Pose = i.Nd_number
             Ee = i.Element_E
             #print(i.Volume)
@@ -573,6 +575,8 @@ class Solver_Static_3D():
                     
         #print(Gr_E)
         #print(Gr_E.T==Gr_E)   
+        print("\r", end='', flush=True)
+        print('---Calculating E: %2d%%'%(100), end='')
         print('')
         return Gr_E
 
