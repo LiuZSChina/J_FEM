@@ -34,6 +34,7 @@ def calc_von_stress(xyz_stress:list) -> float:
 
 class Post_3D():
     def __init__(self, ND_class, ELM_class):
+        self.Nd_class = ND_class
         self.Node, self.Node_cnt = ND_class.GetFemNodesAll()
         self.Element = ELM_class
         self.ElementGroup =  self.Element.Elm_list
@@ -79,15 +80,14 @@ class Post_3D():
             sy = 0
             sz = 0
             svon = 0
-            for el in self.ElementGroup:
-                if el.have_node(nd):
-                    Elm.append(el)
-            for e in Elm:
-                vol_all += e.Volume
-                sx += e.Volume * elm_stress[e.number][0]
-                sy += e.Volume * elm_stress[e.number][1]
-                sz += e.Volume * elm_stress[e.number][2]
-                svon += e.Volume * calc_von_stress(elm_stress[e.number])
+
+            e_number = self.Nd_class.Fem_Node_Elm[nd]
+            for e in e_number:
+                vol_all += self.Element.Elm_dict[e].Volume
+                sx += self.Element.Elm_dict[e].Volume * elm_stress[e][0]
+                sy += self.Element.Elm_dict[e].Volume * elm_stress[e][1]
+                sz += self.Element.Elm_dict[e].Volume * elm_stress[e][2]
+                svon += self.Element.Elm_dict[e].Volume * calc_von_stress(elm_stress[e])
             sx = sx/vol_all
             sy = sy/vol_all
             sz = sz/vol_all

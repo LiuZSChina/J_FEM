@@ -32,9 +32,10 @@ class Element_Group():
         elif elm_type == 'T4_3d':
             for j in Nd_list:
                 if j not in self.Nd_class.Fem_Nodes_Dic:
-                    print("Problem!")
+                    print("Elm warning===<No such Nodes!>")
                     exit()
             elm = Tera4Node_3d(i,Nd_list,self.Nd_class,Material)
+            self.Nd_class.Set_Node_in_Elm(i, Nd_list)
             self.Elm_list.append(elm)
             self.Elm_dict[i] = elm
         return i

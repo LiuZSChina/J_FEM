@@ -7,21 +7,59 @@ from mpl_toolkits.mplot3d import Axes3D
 class Fem_Nodes():
     def __init__(self):
         self.Fem_Nodes_List = []
-        self.Fem_Nodes_Dic = {} # {'number':[x,y,z]}
+        self.Fem_Nodes_Dic = {} # {number<int>:[x,y,z]}
+        #self.Fem_Nodes_Dof = {} # {number<int>:Dof:int} 3->xyz; 6-xyz + theta xyz;
+        self.Fem_Node_Elm = {} # {number<int>:[Elms]<list>} Elm have this Node
         #self.Fem_Nodes_Surface = {} # {'number':[x,y,z]}
         self.Fem_Nodes_count = 0
     
+    def Set_Node_in_Elm(self,Elm_num:int, Node_num:list):
+        for nd in Node_num:
+            self.Fem_Node_Elm[nd].append(Elm_num)
+
+    def Add_one_Node(self, Node_number:int, Node_Cord:list):
+        index = -1
+        if_new_number = False
+        #新节点
+        if Node_Cord not in self.Fem_Nodes_List: 
+            # 新编号
+            if Node_number not in self.Fem_Nodes_Dic:
+                self.Fem_Nodes_Dic[Node_number] = Node_Cord
+                self.Fem_Nodes_List.append(Node_Cord)
+                index = Node_number
+                self.Fem_Nodes_count+=1
+                self.Fem_Node_Elm[Node_number] = []
+                if_new_number = True
+            #编号存在，覆盖原有节点
+            else:
+                self.Fem_Nodes_List.remove(self.Fem_Nodes_Dic[Node_number])
+                self.Fem_Nodes_Dic[Node_number] = Node_Cord
+                self.Fem_Nodes_List.append(Node_Cord)
+                index = Node_number
+            
+        #已有节点
+        else:
+            #找到节点编号
+            for key in self.Fem_Nodes_Dic:
+                if self.Fem_Nodes_Dic[key] == Node_Cord:
+                    index = key
+                    if_new_number = False
+                    break
+        return index , if_new_number
+
     def Add_Fem_Nodes_With_Number(self, New_Node_List, Node_pos):
         junk = [] #维度不对的就返回，不加入进去
         index = []
         #逐个加入
-        for i  in range(len(New_Node_List)):
+        for i in range(len(New_Node_List)):
             Node_Cord = New_Node_List[i]
             Node_number = Node_pos[i]
             if len(Node_Cord) != 3:
                 junk.append(Node_Cord)
 
-            #新节点
+            ind, new_num = self.Add_one_Node(Node_number, Node_Cord)
+            index.append(ind)
+            """#新节点
             if Node_Cord not in self.Fem_Nodes_List: 
                 # 新编号
                 if Node_number not in self.Fem_Nodes_Dic:
@@ -46,6 +84,7 @@ class Fem_Nodes():
                         break
                 
                 junk.append(Node_Cord)
+            """
 
         return index
 
@@ -56,10 +95,11 @@ class Fem_Nodes():
             x = start[0] + i*step[0]
             y = start[1] + i*step[1]
             z = start[2] + i*step[2]
-            self.Fem_Nodes_Dic[start_number+i] = [x, y, z]
-            self.Fem_Nodes_List.append([x, y, z])
-            index.append(start_number+i)
-            self.Fem_Nodes_count+=1
+            key, new_num = self.Add_one_Node(start_number+i,[x, y, z])
+            """self.Fem_Nodes_Dic[start_number+i] = [x, y, z]
+            self.Fem_Nodes_List.append([x, y, z])"""
+            index.append(key)
+            #self.Fem_Nodes_count+=1
 
     def Add_Fem_Nodes_Auto_Number(self, Node_pos)->list:
         i = self.Fem_Nodes_count
@@ -67,7 +107,11 @@ class Fem_Nodes():
             i += 1
         pos = [] #加入后的编号
         for nd in range(len(Node_pos)):
-            if Node_pos[nd] not in self.Fem_Nodes_List:
+            key, new_num = self.Add_one_Node(i,Node_pos[nd])
+            pos.append(key)
+            if new_num:
+                i += 1
+            """if Node_pos[nd] not in self.Fem_Nodes_List:
                 pos.append(i)
                 self.Fem_Nodes_Dic[i] = Node_pos[nd]
                 self.Fem_Nodes_List.append(Node_pos[nd])
@@ -77,7 +121,7 @@ class Fem_Nodes():
                 for key in self.Fem_Nodes_Dic:
                     if self.Fem_Nodes_Dic[key] == Node_pos[nd]:
                         pos.append(key)
-                        break
+                        break"""
         return pos
 
     def GetFemNodes(self,key:list)->list:

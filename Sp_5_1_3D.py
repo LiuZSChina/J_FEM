@@ -122,6 +122,8 @@ if 0:
 print('\n========================> Solving Problem <========================')
 
 a = Sov.solve()
+#print(Nd.Fem_Node_Elm)
+#print(Nd.Fem_Nodes_count)
 #print(a)
 #print('\nDisplacement------------------')
 #print(a['Stress'])
@@ -134,8 +136,8 @@ post = src.FemPostProc.Post_3D(Nd,Fem_Elms_class)
 pdf,cdf = post.Get_Deformed_Nodes(a['Displacement'],Scaler=100)
 dic_xyz = post.get_points_displacement(a['Displacement'],Scaler=100)
 stress = post.get_cell_stress(a['Stress'])
-#stress_nd = post.get_stress_nd(a['Stress'])
-#dic_xyz.update(stress_nd)
+stress_nd = post.get_stress_nd(a['Stress'])
+dic_xyz.update(stress_nd)
 c_data = stress
 src.FemSave.FemSave(list(pdf), {"tetra":list(Mesh)}, save_name, point_data=dic_xyz, cell_data=c_data)
 
