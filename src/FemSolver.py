@@ -327,6 +327,9 @@ class Solver_Static_3D():
         
         # 载荷矩阵
         self.Groupe_P = np.zeros((3*self.Node_cnt,1))
+        self.Fix_Node = np.zeros((3*self.Node_cnt,1))
+        self.Disp_Node = np.zeros((3*self.Node_cnt,1))
+        self.Fix_Node_dict = {'x':[],'y':[],'z':[]}
         print('---Got Mat P')
 
         # 总体刚度矩阵
@@ -338,6 +341,8 @@ class Solver_Static_3D():
     def solve(self):
         #打印总共自由度
         print('\nTotal Dofs ================== %s\n'%self.Total_Dof)
+
+        self.Apply_fix()
 
         #计算整体的节点位移
         if self.Total_Dof <1000:
@@ -396,6 +401,25 @@ class Solver_Static_3D():
 
         return {'Displacement':Node_displacement,'Strain':eps,'Stress':sigma}
 
+    #获得加载情况
+    def get_loads(self):
+        nd_load = {'Fix_x':[0]*(self.Node_cnt), 
+                     'Fix_y':[0]*(self.Node_cnt), 
+                     'Fix_z':[0]*(self.Node_cnt),
+                     'P_x':[0]*(self.Node_cnt),
+                     'P_y':[0]*(self.Node_cnt),
+                     'P_z':[0]*(self.Node_cnt)}
+
+        for i in range(self.Node_cnt):
+            nd_load['Fix_x'][i] = self.Fix_Node[3*i]
+            nd_load['P_x'][i] = self.Groupe_P[3*i]
+            nd_load['Fix_y'][i] = self.Fix_Node[3*i+1]
+            nd_load['P_y'][i] = self.Groupe_P[3*i+1]
+            nd_load['Fix_z'][i] = self.Fix_Node[3*i+2]
+            nd_load['P_z'][i] = self.Groupe_P[3*i+2]
+
+        return nd_load
+
     # 显示所有的网格
     def Draw_Mesh(self,Size = [0.1,0.95]):
         fig = plt.figure()
@@ -451,6 +475,33 @@ class Solver_Static_3D():
             self.Groupe_P[3*int(Node_Number) + 2][0] = value[2]
         return
 
+    def Apply_fix(self):
+        for col in range(3*self.Node_cnt):
+            for Node_Number in self.Fix_Node_dict['x']:
+                if self.Calc_E[3*Node_Number,col] != 0:
+                    self.Calc_E[3*Node_Number,col] = 0.0
+                if self.Calc_E[col,3*Node_Number] != 0:
+                    self.Calc_E[col,3*Node_Number] = 0.0
+
+            for Node_Number in self.Fix_Node_dict['y']:
+                if self.Calc_E[3*Node_Number+1,col] == 0 and self.Calc_E[col,3*Node_Number+1] == 0:
+                    continue
+                self.Calc_E[3*Node_Number+1,col] = 0
+                self.Calc_E[col,3*Node_Number+1] = 0
+
+            for Node_Number in self.Fix_Node_dict['z']:
+                if self.Calc_E[3*Node_Number+2,col] == 0 and self.Calc_E[col,3*Node_Number+2] == 0:
+                    continue
+                self.Calc_E[3*Node_Number+2,col] = 0
+                self.Calc_E[col,3*Node_Number+2] = 0
+        
+        for Node_Number in self.Fix_Node_dict['x']:
+            self.Calc_E[3*Node_Number,3*Node_Number] = 1
+        for Node_Number in self.Fix_Node_dict['y']:
+            self.Calc_E[3*Node_Number+1,3*Node_Number+1] = 1
+        for Node_Number in self.Fix_Node_dict['z']:
+            self.Calc_E[3*Node_Number+2,3*Node_Number+2] = 1
+
     # 定义位移边界条件
     def Displacement(self,Node_Number,value):
         Node_Number = int(Node_Number)
@@ -458,17 +509,16 @@ class Solver_Static_3D():
             self.Total_Dof -= 1
             self.Groupe_P[3*Node_Number] = 0
             
-            # 改1法
-            for col in range(3*self.Node_cnt):
-                if col != 3*Node_Number:
-                    self.Calc_E[3*Node_Number,col] = 0
-                else:
-                    self.Calc_E[3*Node_Number,col] = 1
-            for row in range(3*self.Node_cnt):
-                if row != 3*Node_Number:
-                    self.Calc_E[row,3*Node_Number] = 0
-                else:
-                    self.Calc_E[row,3*Node_Number] = 1
+            # 改1法 (固定)
+            self.Fix_Node[3*Node_Number] = 1
+            if Node_Number not in self.Fix_Node_dict['x']:
+                self.Fix_Node_dict['x'].append(Node_Number)
+            """for col in range(3*self.Node_cnt):
+                if self.Calc_E[3*Node_Number,col] == 0 and self.Calc_E[col,3*Node_Number] == 0:
+                    continue
+                self.Calc_E[3*Node_Number,col] = 0
+                self.Calc_E[col,3*Node_Number] = 0
+            self.Calc_E[3*Node_Number,3*Node_Number] = 1"""
 
         elif value[0] != '':
             self.Total_Dof -= 1
@@ -479,17 +529,16 @@ class Solver_Static_3D():
             self.Total_Dof -= 1
             self.Groupe_P[3*Node_Number+1] = 0
             
-            # 改1法
-            for col in range(3*self.Node_cnt):
-                if col != 3*Node_Number+1:
-                    self.Calc_E[3*Node_Number+1, col] = 0
-                else:
-                    self.Calc_E[3*Node_Number+1, col] = 1
-            for row in range(3*self.Node_cnt):
-                if row != 3*Node_Number+1:
-                    self.Calc_E[row, 3*Node_Number+1] = 0
-                else:
-                    self.Calc_E[row, 3*Node_Number+1] = 1
+            # 改1法(fix)
+            self.Fix_Node[3*Node_Number+1] = 1
+            if Node_Number not in self.Fix_Node_dict['y']:
+                self.Fix_Node_dict['y'].append(Node_Number)
+            """for col in range(3*self.Node_cnt):
+                if self.Calc_E[3*Node_Number+1,col] == 0 and self.Calc_E[col,3*Node_Number+1] == 0:
+                    continue
+                self.Calc_E[3*Node_Number+1,col] = 0
+                self.Calc_E[col,3*Node_Number+1] = 0
+            self.Calc_E[3*Node_Number+1,3*Node_Number+1] = 1"""
 
         elif value[1] != '':
             self.Total_Dof -= 1
@@ -500,17 +549,17 @@ class Solver_Static_3D():
             self.Total_Dof -= 1
             self.Groupe_P[3*Node_Number+2] = 0
             
-            # 改1法
-            for col in range(3*self.Node_cnt):
-                if col != 3*Node_Number+2:
-                    self.Calc_E[3*Node_Number+2, col] = 0
-                else:
-                    self.Calc_E[3*Node_Number+2, col] = 1
-            for row in range(3*self.Node_cnt):
-                if row != 3*Node_Number+2:
-                    self.Calc_E[row, 3*Node_Number+2] = 0
-                else:
-                    self.Calc_E[row, 3*Node_Number+2] = 1
+            # 改1法(fix)
+            self.Fix_Node[3*Node_Number+2] = 1
+            if Node_Number not in self.Fix_Node_dict['z']:
+                self.Fix_Node_dict['z'].append(Node_Number)
+            """for col in range(3*self.Node_cnt):
+                if self.Calc_E[3*Node_Number+2,col] == 0 and self.Calc_E[col,3*Node_Number+2] == 0:
+                    continue
+                self.Calc_E[3*Node_Number+2,col] = 0
+                self.Calc_E[col,3*Node_Number+2] = 0
+            self.Calc_E[3*Node_Number+2,3*Node_Number+2] = 1"""
+
 
         elif value[2] != '':
             self.Total_Dof -= 1

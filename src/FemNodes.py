@@ -220,7 +220,35 @@ class Fem_Nodes():
             nd_list.append(i)
 
         return nd_list
-                
+    
+    #找到在 Ax+By+Cz+D = 0 上的节点
+    def Find_Nodes_Surface(self, abcd:list, cord_range:dict = {},dif=1e-12)->list:
+        ans = []
+        for i in self.Fem_Nodes_Dic:
+            xyz = self.Fem_Nodes_Dic[i]
+            if cord_range != {} and 'x' in cord_range and (xyz[0]<cord_range['x'][0] or xyz[0]>cord_range['x'][1]):
+                continue
+            if cord_range != {} and 'y' in cord_range and (xyz[1]<cord_range['y'][0] or xyz[1]>cord_range['y'][1]):
+                continue
+            if cord_range != {} and 'z' in cord_range and (xyz[2]<cord_range['z'][0] or xyz[2]>cord_range['z'][1]):
+                continue
+            
+            if abs(xyz[0]*abcd[0] + xyz[1]*abcd[1] +xyz[2]*abcd[2] + abcd[3]) < dif:
+                ans.append(i)
+        return ans
+    
+    #找到在 z方向的圆柱上的节点
+    def Find_Nodes_Cylinder_Z(self, center:list, r:float, dif=1e-7)->list:
+        ans = []
+        for i in self.Fem_Nodes_Dic:
+            xyz = self.Fem_Nodes_Dic[i]
+            if xyz[0] < center[0]-r or xyz[0] > center[0]+r:
+                continue
+            if xyz[1] < center[1]-r or xyz[1] > center[1]+r:
+                continue
+            if abs((xyz[0]-center[0])**2 + (xyz[1]-center[1])**2 - r**2) <dif:
+                ans.append(i)
+        return ans
 
     #三维模式下绘图 Nodes = [] 绘制所有
     def PrintFemNodes3d(self, Nodes:list, psize=[10,5], scale = [1e-2,1e-2,1e-2]):   
