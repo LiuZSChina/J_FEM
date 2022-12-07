@@ -43,7 +43,7 @@ class Solver_Static_2D():
             exit()
         print(word)
         self.color_map = self.Get_colors()
-        print(self.color_map)
+        #print(self.color_map)
         # 载荷矩阵
         self.Groupe_P = np.zeros((2*self.Node_cnt,1))
         print('---Got Mat P')
@@ -65,7 +65,9 @@ class Solver_Static_2D():
             Node_displacement = Doolittle_solver(Solv_E,self.Groupe_P)
         else:
             print('Solving Method ............... Scipy')
+            print('Matrix(E) size=', self.Calc_E.get_shape(),'; Nonzero = ',self.Calc_E.count_nonzero(), '(', round(100*self.Calc_E.count_nonzero()/(self.Calc_E.get_shape()[0]**2),2),'%)')
             print('Solving Displacement.........\t',end='')
+            
             Solv_E = self.Calc_E.tocsr()
             Node_displacement = np.array([sci_linalg.spsolve(Solv_E,self.Groupe_P)]).T
         print('Done')

@@ -16,7 +16,7 @@ model_file = "bulldozer_3d"
 """
 第一步,先建模。
 """
-_mesh_size_ = 3e-2
+_mesh_size_ = 2e-2
 
     #pygmsh.write("Script_5_1.msh")
 with pygmsh.occ.Geometry() as geom:
@@ -33,10 +33,10 @@ with pygmsh.occ.Geometry() as geom:
     disk1 = geom.add_disk([0.435/2.0, 0.435, 0.0], 0.05)
     disk2 = geom.add_disk([0.435/2.0, 0.105, 0.0], 0.05)
     disk3 = geom.add_disk([0.435/2.0, 0.765, 0.0], 0.05)
-
+    #disk4 = geom.add_disk([0, 0.585, 0.0], 0.05)
     flat = geom.boolean_difference(
         poly , 
-        geom.boolean_union([disk3,  disk1, disk2]),
+        geom.boolean_union([disk3,  disk1, disk2]), #, disk4
     )
 
     geom.extrude(flat, [0, 0, 4e-2])  # type: ignore
@@ -107,6 +107,7 @@ x0 = Nd.Find_Nodes_Cord_Range({'x':[0], 'y':[0,0.585]})
 for i in x0:
     Sov.Displacement(i,[0,'',''])
 print('.',end='')
+x0 = Nd.Find_Nodes_Cord_Range({'x':[0.435], 'y':[0,0.285]})
 x0 = Nd.Find_Nodes_Cord_Range({'x':[0.435], 'y':[0,0.285]})
 #x0 = Nd.Find_Nodes_Cord_Range({'x':[0.435], 'y':[0,1.065]})
 #print(x0)
