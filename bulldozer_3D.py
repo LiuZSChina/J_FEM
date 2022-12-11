@@ -6,7 +6,7 @@ import src.FemSave
 import src.FemPostProc
 import numpy as np
 import pygmsh
-import time as ti
+import time as ti   
 
 start_time = ti.time()
 
@@ -121,7 +121,7 @@ for i in x0:
 print('.',end='')
 #x0 = Nd.Find_Nodes_Cord_Range({'y':[0,0.435],'z':[0]})
 sd_time = ti.time()
-x0 = Nd.Find_Nodes_Cord_Range({'x':[0],'z':[0]})
+x0 = Nd.Find_Nodes_Cord_Range({'x':[0],'y':[0],'z':[0]})
 #print(x0)
 for i in x0:
     Sov.Displacement(i,['','',0])

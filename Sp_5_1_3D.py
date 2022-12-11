@@ -24,7 +24,7 @@ with pygmsh.geo.Geometry() as geom:
             [1.0e-1, 1e-2],
             [0, 1e-2],
         ],
-        mesh_size=1e-3,
+        mesh_size=5e-3,
     )
     geom.extrude(poly, [0.0, 0.0, 2e-2], num_layers=12)   # type: ignore
     mesh = geom.generate_mesh()

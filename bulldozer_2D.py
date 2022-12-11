@@ -200,4 +200,4 @@ def bulldozer2D(_mesh_size_, prt=0):
     
 
 if __name__ == "__main__":
-    bulldozer2D(1e-2, 1)
+    bulldozer2D(2e-2, 1)
